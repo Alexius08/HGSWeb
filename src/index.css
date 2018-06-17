@@ -109,7 +109,7 @@
     line-height: 50px !important;
   }
 }
-@media (min-width: 767px) {
+@media (min-width: 768px) {
   .nav-side-menu .menu-list .menu-content {
     display: block;
   }
@@ -121,5 +121,32 @@
 }
 
 body{
-	background-color: black;
+	background-color: #aaa;
+}
+.numUpDown{
+	width: 50px;
+	text-align: right;
+}
+
+.imgInputHolder{
+	position: relative;
+	width: 50%
+}
+
+.imgInputHolder .middle{
+	transition: .5s;
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	width: 100%;
+	transform: translate(-50%, -50%);
+	opacity: 0;
+}
+
+.imgInputHolder:hover .middle{
+	opacity: 1;
+}
+
+.imgInputHolder input{
+	width: 100px;
 }
