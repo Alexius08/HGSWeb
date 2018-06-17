@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
-import {Grid, Row, Col, Collapse, Form, FormGroup, ControlLabel, FormControl, DropdownButton, MenuItem, Modal, InputGroup, Button} from 'react-bootstrap';
+import {Grid, Row, Col, Collapse, Form, FormGroup, ControlLabel, FormControl,
+		DropdownButton, MenuItem, Modal, InputGroup, Button} from 'react-bootstrap';
 import ArenaEvent, {DefaultEvent} from './defaultEvent';
 import SpecialArenaEvent, {DefaultSpecialEvent} from './defaultSpecialEvent';
 
@@ -19,7 +20,6 @@ class App extends Component{
 	}
   }
 	componentDidMount(){
-		//localStorage.removeItem("HGTribute");
 		if(localStorage.getItem("HGTribute")!=null){
 			var trib = [];
 			console.log("Tribute database detected");
@@ -34,11 +34,12 @@ class App extends Component{
 			console.log("No tribute database detected");
 			trib = [];			
 			var TributeName = ["Marvel", "Glimmer", "Cato", "Clove", "", "", "", "",
-						"", "Foxface", "Jason", "", "", "", "", "",
-						"", "", "", "", "Thresh", "Rue", "Peeta Mellark", "Katniss Everdeen"];
-			for ( i = 0; i < 24; i++){
-				trib.push(new Player(i, "", "", i%2===0 ? "M" : "F", "T"+i+".png", "BW"));
-				trib[i].fullname = TributeName[i] === "" ? ("District " + ((i-i%2)/2+1) + " " + (i%2===0 ? "M" : "Fem") + "ale") : TributeName[i];
+						"", "Foxface", "Jason", "", "", "", "", "", "", "", "", "",
+						"Thresh", "Rue", "Peeta Mellark", "Katniss Everdeen"];
+			for (i = 0; i < 24; i++){
+				trib.push(new Player(i, "", "", i % 2 === 0 ? "M" : "F", "T" + i + ".png", "BW"));
+				trib[i].fullname = TributeName[i] === "" ? ("District " + ((i - i % 2) / 2 + 1) +
+									" " + (i % 2 === 0 ? "M" : "Fem") + "ale") : TributeName[i];
 				var fullname = trib[i].fullname;
 				trib[i].nickname = i > 21 ? fullname.substr(0, fullname.indexOf(" ")) : fullname;
 			}
@@ -47,11 +48,11 @@ class App extends Component{
 			console.log("Default tributes loaded");
 		}
 		
-		if(localStorage.getItem("HGEvent")!=null){
+		if(localStorage.getItem("HGEvent") != null){
 			console.log("Event database detected");
 			var evt=JSON.parse(localStorage.HGEvent);
-			for (i=0; i<evt.length; i++){
-				evt[i]=Object.assign(new ArenaEvent(), evt[i])
+			for (i = 0; i < evt.length; i++){
+				evt[i] = Object.assign(new ArenaEvent(), evt[i])
 			}
 			this.setState({"arenaEvent": [...evt]});
 			console.log("Event database loaded");
@@ -61,11 +62,11 @@ class App extends Component{
 			console.log("Default events loaded");
 		}
 		
-		if(localStorage.getItem("HGSpecEvent")!=null){
+		if(localStorage.getItem("HGSpecEvent") != null){
 			console.log("Arena event database detected");
-			var specEvt=JSON.parse(localStorage.HGSpecEvent);
-			for (i=0; i<specEvt.length; i++){
-				specEvt[i]=Object.assign(new SpecialArenaEvent(), specEvt[i])
+			var specEvt = JSON.parse(localStorage.HGSpecEvent);
+			for (i = 0; i < specEvt.length; i++){
+				specEvt[i] = Object.assign(new SpecialArenaEvent(), specEvt[i])
 			}
 			this.setState({"specialArenaEvent": [...specEvt]});
 			console.log("Arena event database loaded");
@@ -77,33 +78,32 @@ class App extends Component{
 	}
 	
 	componentDidUpdate(){
-
-		if(localStorage.getItem("HGTribute")!==JSON.stringify(this.state.tribute)){
-			localStorage.setItem("HGTribute", JSON.stringify(this.state.tribute));
+		var st = this.state
+		if(localStorage.getItem("HGTribute") !== JSON.stringify(st.tribute)){
+			localStorage.setItem("HGTribute", JSON.stringify(st.tribute));
 			console.log("Tribute database updated");
 		}
-
-		if(localStorage.getItem("HGEvent")!==JSON.stringify(this.state.arenaEvent)){
-			localStorage.setItem("HGEvent", JSON.stringify(this.state.arenaEvent));
+		if(localStorage.getItem("HGEvent") !== JSON.stringify(st.arenaEvent)){
+			localStorage.setItem("HGEvent", JSON.stringify(st.arenaEvent));
 			console.log("Event database updated");
 		}		
-
-		if(localStorage.getItem("HGSpecEvent")!==JSON.stringify(this.state.specialArenaEvent)){
-			localStorage.setItem("HGSpecEvent", JSON.stringify(this.state.specialArenaEvent));
+		if(localStorage.getItem("HGSpecEvent") !== JSON.stringify(st.specialArenaEvent)){
+			localStorage.setItem("HGSpecEvent", JSON.stringify(st.specialArenaEvent));
 			console.log("Arena event database updated");
 		}		
 	}
   render() {
+	var st = this.state;
     return (
 	<Grid>
 		<Row>
-			<Col sm={2} className="nav-side-menu">
-				<div className="brand">Hunger Games Simulator</div>
-				<i className="fa fa-bars fa-2x toggle-btn" onClick={() => this.setState({ showMenu: !this.state.showMenu })}>Menu</i>
+			<Col sm = {2} className = "nav-side-menu">
+				<div className = "brand">Hunger Games Simulator</div>
+				<i className = "fa fa-bars fa-2x toggle-btn" onClick={() => this.setState({showMenu: !st.showMenu})}>Menu</i>
 				<div className="menu-list">
-					<Collapse in={this.state.showMenu}>
-						<ul className="menu-content">
-							<li className="active">Simulate</li>
+					<Collapse in = {st.showMenu}>
+						<ul className = "menu-content">
+							<li className = "active">Simulate</li>
 							<li>Tribute Database</li>
 							<li>Event List</li>
 							<li>Settings</li>
@@ -111,11 +111,10 @@ class App extends Component{
 					</Collapse>
 				</div>
 			</Col>
-			<Col sm={10} id="main">
-			<ReapingScreen availableTribute={this.state.tribute}/>
+			<Col sm = {10} id = "main">
+				<ReapingScreen availableTribute = {st.tribute}/>
 			</Col>
-		</Row>
-				
+		</Row>			
 	</Grid>);
   }
 }
@@ -165,7 +164,7 @@ class ReapingScreen extends Component{
 	updateState(e){
 		var newVal = e.target.value, st = this.state;
 		var old = st.curTributes.slice(), newCount = 0;
-		if (e.target.id==="tributesPerDistrict"){
+		if (e.target.id === "tributesPerDistrict"){
 			this.setState({"tribsPerDist": newVal});
 			newCount = newVal * st.distCount;					
 		}
@@ -200,13 +199,13 @@ class ReapingScreen extends Component{
 		this.setState({showTributeInput: false});
 	}
 	render(){
-		var tableContents = [], st = this.state;
+		var tableContents = [], st = this.state, pr = this.props;
 		for (var i = 0; i < st.distCount; i++){
 			var rowContents = [];
 			for (var j = 0; j < st.tribsPerDist; j++){
 				var cellNo = j * st.distCount + i;
 				rowContents.push(<td key = {cellNo}>
-				<TributeInput id = {cellNo} name={""} tribList={this.props.availableTribute} showTributeInput={this.showTributeInput}/>
+				<TributeInput id = {cellNo} name = {""} tribList = {pr.availableTribute} showTributeInput = {this.showTributeInput}/>
 				</td>) //name in tributeinput must correspond to default or previous roster
 			}
 			tableContents.push(<tr key = {i}>{rowContents}</tr>);
@@ -214,29 +213,29 @@ class ReapingScreen extends Component{
 		return(
 		<div>
 			<Form horizontal>
-				<FormGroup controlId="tributesPerDistrict">
-					<Col componentClass ={ControlLabel} sm={4} xs={3}>
+				<FormGroup controlId = "tributesPerDistrict">
+					<Col componentClass = {ControlLabel} sm = {4} xs = {3}>
 						Number of tributes per district:
 					</Col>
 					<Col>
-						<FormControl className = "numUpDown" componentClass="input" type="number" bsSize="sm"
+						<FormControl className = "numUpDown" type = "number" bsSize = "sm"
 						min={2} max={8} value = {st.tribsPerDist} onChange = {this.updateState} />
 					</Col>
 				</FormGroup>
-				<FormGroup controlId="numDistricts">
-					<Col componentClass={ControlLabel} sm={4} xs={3}>
+				<FormGroup controlId = "numDistricts">
+					<Col componentClass = {ControlLabel} sm = {4} xs = {3}>
 						Number of districts:
 					</Col>
 					<Col>
-						<FormControl className = "numUpDown" componentClass="input" type="number" bsSize="sm"
-						min={11} max={14} value = {st.distCount} onChange = {this.updateState} />
+						<FormControl className = "numUpDown" type = "number" bsSize = "sm"
+						min = {11} max= {14} value = {st.distCount} onChange = {this.updateState} />
 					</Col>
 				</FormGroup>
 			</Form>
 			<table>
 				<tbody>{tableContents}</tbody>
 			</table>
-			<NewTributeInput show={this.state.showTributeInput} hide={this.hideTributeInput} tribList={this.props.availableTribute}/>
+			<NewTributeInput show={st.showTributeInput} hide={this.hideTributeInput} tribList={pr.availableTribute}/>
 		</div>);
 	}
 }
@@ -258,11 +257,11 @@ class TributeInput extends Component{
 	}
 
 	render(){
-		var id = this.props.id;
-		return(<DropdownButton bsStyle="primary" title={(this.props.name===""?"Empty slot":this.props.name)} id = {"selectTrib" + id}>
-				<MenuItem eventKey={0} onClick={this.props.showTributeInput} onSelect={this.onSelect}>Add new tribute</MenuItem>
-				<MenuItem eventKey={1} onSelect={this.onSelect}>Select existing tribute</MenuItem>
-				<MenuItem eventKey={2} onSelect={this.onSelect}>Pick a random tribute</MenuItem>
+		var pr = this.props;
+		return(<DropdownButton bsStyle = "primary" title = {(pr.name === "" ? "Empty slot" : pr.name)} id = {"selectTrib" + pr.id}>
+				<MenuItem eventKey = {0} onClick = {pr.showTributeInput} onSelect = {this.onSelect}>Add new tribute</MenuItem>
+				<MenuItem eventKey = {1} onSelect = {this.onSelect}>Select existing tribute</MenuItem>
+				<MenuItem eventKey = {2} onSelect = {this.onSelect}>Pick a random tribute</MenuItem>
 		</DropdownButton>);
 	}
 }
@@ -289,7 +288,6 @@ class NewTributeInput extends Component{
 		
 		this.resetInput = this.resetInput.bind(this);
 	}
-
 	
 	updateTribName(e){
 		this.setState({tribName: e.target.value});
@@ -305,7 +303,7 @@ class NewTributeInput extends Component{
 	
 	updateDeathPicType(e){
 		this.setState({tribDeathPicType: e.target.value});
-		if(e.target.value!=="Custom"){
+		if(e.target.value !== "Custom"){
 			this.setState({generatedDeathPic: this.state.tribPicUrl})
 		}
 	}
@@ -318,23 +316,15 @@ class NewTributeInput extends Component{
 		this.setState({tribDeathPicUrl: e.target.value});
 	}
 	
-	componentDidMount(){
-
-	}
-	
-	componentDidUpdate(){
-		
-	}
-	
 	checkInput(e){
 		var st = this.state, pr = this.props, validURL = new RegExp("/^http(s)?:[//].+[.](jpg|jpeg|gif|bmp|png)$/i");
-		if(st.tribName===""||st.tribNick===""||st.tribPicUrl===""){
+		if(st.tribName === "" || st.tribNick === "" || st.tribPicUrl === ""){
 			console.log("Cannot leave tribname, tribnick, or tribpic blank");
 		}
 		else{
 			var foundMatch = false;
 			for (var i = 0; i < pr.tribList.length; i++){
-				if(st.tribName===pr.tribList[i].fullname){
+				if(st.tribName === pr.tribList[i].fullname){
 					foundMatch = true;
 					break;
 				}
@@ -342,14 +332,15 @@ class NewTributeInput extends Component{
 			if(foundMatch){
 				console.log("Duplicate spotted");
 			}
-			else if(st.gender===""){
+			else if(st.gender === ""){
 				console.log("No gender selected");
 			}
-			else if(!validURL.test(st.tribPicUrl) ||(st.tribDeathPicType==="Custom" && !validURL.test(st.tribDeathPicUrl))){
+			else if(!validURL.test(st.tribPicUrl) || (st.tribDeathPicType==="Custom" && !validURL.test(st.tribDeathPicUrl))){
 				console.log("Invalid image url");
 			}
 			else{
 				console.log("Input validated");
+				//Save input
 				pr.hide();
 			}
 		}
@@ -363,72 +354,75 @@ class NewTributeInput extends Component{
 			tribDeathPicUrl: ""});
 	}
 	render(){
+		var st = this.state, pr = this.props;
 		return(
-		<Modal backdrop="static" show={this.props.show} onHide={this.props.hide} onExited={this.resetInput}>
+		<Modal backdrop = "static" show = {pr.show} onHide = {pr.hide} onExited = {this.resetInput}>
 			<Modal.Header closeButton>
 				<Modal.Title>Add new tribute</Modal.Title>
 			</Modal.Header>
 			<Modal.Body>
 				<Row>
-					<Col sm={8}>
+					<Col sm = {8}>
 						<Form>
-							<FormGroup controlId="newTribName">
+							<FormGroup controlId = "newTribName">
 								<InputGroup>
 									<InputGroup.Addon>Name</InputGroup.Addon>
-									<FormControl type="text" value = {this.state.tribName} onChange={this.updateTribName}/>
+									<FormControl type = "text" value = {st.tribName} onChange = {this.updateTribName}/>
 								</InputGroup>
 							</FormGroup>
-							<FormGroup controlId="newTribNick">
+							<FormGroup controlId = "newTribNick">
 								<InputGroup>
 									<InputGroup.Addon>Nickname</InputGroup.Addon>
-									<FormControl type="text" value = {this.state.tribNick} onChange={this.updateTribNick}/>
+									<FormControl type = "text" value = {st.tribNick} onChange = {this.updateTribNick}/>
 								</InputGroup>
 							</FormGroup>
-							<FormGroup controlId="newTribGender">
+							<FormGroup controlId = "newTribGender">
 								<InputGroup>
 									<InputGroup.Addon>Gender</InputGroup.Addon>
-									<FormControl componentClass="select" value = {this.state.tribGender} onChange={this.updateGender}>
+									<FormControl componentClass = "select" value = {st.tribGender} onChange = {this.updateGender}>
 										<option disabled hidden></option>
-										<option value="M">Male</option>
-										<option value="F">Female</option>
-										<option value="N">Neuter</option>
-										<option value="I">Indeterminate</option>
+										<option value = "M">Male</option>
+										<option value = "F">Female</option>
+										<option value = "N">Neuter</option>
+										<option value = "I">Indeterminate</option>
 									</FormControl>
 								</InputGroup>
 							</FormGroup>
-							<FormGroup controlId="newTribDeathPicType">
+							<FormGroup controlId = "newTribDeathPicType">
 								<InputGroup>
 									<InputGroup.Addon>Death Pic</InputGroup.Addon>
-									<FormControl componentClass="select" value={this.state.tribDeathPicType} onChange={this.updateDeathPicType}>
-										<option value="BW">Grayscale</option>
-										<option value="N">Normal</option>
-										<option value="X">Cross mark</option>
-										<option value="Custom">Custom</option>
+									<FormControl componentClass = "select" value = {st.tribDeathPicType} onChange = {this.updateDeathPicType}>
+										<option value = "BW">Grayscale</option>
+										<option value = "N">Normal</option>
+										<option value = "X">Cross mark</option>
+										<option value = "Custom">Custom</option>
 									</FormControl>
 								</InputGroup>
 							</FormGroup>
 						</Form>
 					</Col>
 					<Col sm={4}>
-						<div className="imgInputHolder">
-							<img alt="Tribute pic" src="default.png" height={100} width={100}/>
-							<div className="middle">
-								<FormControl type="text" id="newTribPicUrl" bsSize="sm" placeholder="Enter image URL here" value={this.state.tribPicUrl} onChange={this.updatePicUrl}/>
+						<div className = "imgInputHolder">
+							<img alt = "Tribute pic" src = "default.png" height = {100} width = {100}/>
+							<div className = "middle">
+								<FormControl type = "text" id = "newTribPicUrl" bsSize = "sm" placeholder = "Enter image URL here"
+									value = {st.tribPicUrl} onChange = {this.updatePicUrl}/>
 							</div>
 						</div>
 						<br/><br/>
-						<div className="imgInputHolder">
-							<img alt="Death pic" src={this.state.generatedDeathPic} height={100} width={100}/>
+						<div className = "imgInputHolder">
+							<img alt="Death pic" src = {st.generatedDeathPic} height = {100} width = {100}/>
 							<div className="middle">
-							{this.state.tribDeathPicType === "Custom" && <FormControl type="text" id="newTribDeathPicUrl" bsSize="sm" placeholder="Enter image URL here" value={this.state.tribDeathPicUrl} onChange={this.updateDeathPicUrl}/>}
+							{st.tribDeathPicType === "Custom" && <FormControl type = "text" id = "newTribDeathPicUrl" bsSize = "sm"
+							placeholder = "Enter image URL here" value = {st.tribDeathPicUrl} onChange = {this.updateDeathPicUrl}/>}
 							</div>
 						</div>
 					</Col>
 				</Row>
 			</Modal.Body>
 			<Modal.Footer>
-				<Button bsStyle="default" onClick={this.checkInput}>Submit</Button>
-				<Button bsStyle="danger" onClick={this.props.hide}>Cancel</Button>
+				<Button bsStyle = "default" onClick = {this.checkInput}>Submit</Button>
+				<Button bsStyle = "danger" onClick = {pr.hide}>Cancel</Button>
 			</Modal.Footer>
 		</Modal>
 		);
