@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import {Grid, Row, Col, Collapse, Form, FormGroup, ControlLabel, FormControl, DropdownButton, MenuItem} from 'react-bootstrap';
+import {Grid, Row, Col, Collapse, Form, FormGroup, ControlLabel, FormControl, DropdownButton, MenuItem, Modal, InputGroup, Button} from 'react-bootstrap';
 import ArenaEvent, {DefaultEvent} from './defaultEvent';
 import SpecialArenaEvent, {DefaultSpecialEvent} from './defaultSpecialEvent';
 
@@ -10,12 +10,16 @@ class App extends Component{
 		arenaEvent: [],
 		specialArenaEvent: [],
 		tribute: [],
+		
 		showMenu: false,
-		advancedMode: false,
-		activePane: "main"
+		activePane: "main",
+		
+		advancedMode: false
+		
 	}
   }
 	componentDidMount(){
+		//localStorage.removeItem("HGTribute");
 		if(localStorage.getItem("HGTribute")!=null){
 			var trib = [];
 			console.log("Tribute database detected");
@@ -106,11 +110,12 @@ class App extends Component{
 						</ul>
 					</Collapse>
 				</div>
-			</Col
+			</Col>
 			<Col sm={10} id="main">
-				<ReapingScreen availableTribute={this.state.tribute}/>
-			</Col>			
+			<ReapingScreen availableTribute={this.state.tribute}/>
+			</Col>
 		</Row>
+				
 	</Grid>);
   }
 }
@@ -138,9 +143,15 @@ class ReapingScreen extends Component{
 		this.state = {
 			tribsPerDist: 0,
 			distCount: 0,
-			curTributes: []
+			curTributes: [],
+			
+			recentPick: -1,
+			
+			showTributeInput: false
 		}
 		this.updateState = this.updateState.bind(this);
+		this.showTributeInput = this.showTributeInput.bind(this);
+		this.hideTributeInput = this.hideTributeInput.bind(this);
 	}
 	componentDidMount(){
 		console.log("Initial number of tributes: " + this.state.curTributes.length);
@@ -154,17 +165,13 @@ class ReapingScreen extends Component{
 	updateState(e){
 		var newVal = e.target.value, st = this.state;
 		var old = st.curTributes.slice(), newCount = 0;
-		switch(e.target.id){
-			case "tributesPerDistrict":
-				this.setState({"tribsPerDist": newVal});
-				newCount = newVal * st.distCount;					
-				break;
-			case "numDistricts":
-				this.setState({"distCount": newVal});
-				newCount = newVal * st.tribsPerDist;
-				break;
-			default:
-				console.log("case not covered");
+		if (e.target.id==="tributesPerDistrict"){
+			this.setState({"tribsPerDist": newVal});
+			newCount = newVal * st.distCount;					
+		}
+		else{
+			this.setState({"distCount": newVal});
+			newCount = newVal * st.tribsPerDist;
 		}
 		if (st.curTributes.length > newCount){
 			var extras = st.curTributes.length - newCount;
@@ -186,13 +193,21 @@ class ReapingScreen extends Component{
 		console.log("Current amount of tributes: " + this.state.curTributes.length);
 		console.log("Available tributes: " + this.props.availableTribute.length);
 	}
+	showTributeInput(){
+		this.setState({showTributeInput: true});
+	}
+	hideTributeInput(){
+		this.setState({showTributeInput: false});
+	}
 	render(){
 		var tableContents = [], st = this.state;
 		for (var i = 0; i < st.distCount; i++){
 			var rowContents = [];
 			for (var j = 0; j < st.tribsPerDist; j++){
 				var cellNo = j * st.distCount + i;
-				rowContents.push(<td key = {cellNo}><TributeInput id = {cellNo} name={""} tribList={this.props.availableTribute}/></td>)
+				rowContents.push(<td key = {cellNo}>
+				<TributeInput id = {cellNo} name={""} tribList={this.props.availableTribute} showTributeInput={this.showTributeInput}/>
+				</td>) //name in tributeinput must correspond to default or previous roster
 			}
 			tableContents.push(<tr key = {i}>{rowContents}</tr>);
 		}
@@ -221,6 +236,7 @@ class ReapingScreen extends Component{
 			<table>
 				<tbody>{tableContents}</tbody>
 			</table>
+			<NewTributeInput show={this.state.showTributeInput} hide={this.hideTributeInput} tribList={this.props.availableTribute}/>
 		</div>);
 	}
 }
@@ -232,16 +248,190 @@ class TributeInput extends Component{
 	}
 	onSelect(x){
 		console.log("option " + x + " picked in selector " + this.props.id)
-		if(x===2){console.log(this.props.tribList[Math.floor(Math.random() * this.props.tribList.length)].fullname)}
+		switch(x){
+			case 2:
+				console.log(this.props.tribList[Math.floor(Math.random() * this.props.tribList.length)].fullname);
+				break;
+			default:
+				console.log("option disabled");
+		}
 	}
 
 	render(){
 		var id = this.props.id;
 		return(<DropdownButton bsStyle="primary" title={(this.props.name===""?"Empty slot":this.props.name)} id = {"selectTrib" + id}>
-				<MenuItem eventKey={0} onSelect={this.onSelect}>Add new tribute</MenuItem>
+				<MenuItem eventKey={0} onClick={this.props.showTributeInput} onSelect={this.onSelect}>Add new tribute</MenuItem>
 				<MenuItem eventKey={1} onSelect={this.onSelect}>Select existing tribute</MenuItem>
 				<MenuItem eventKey={2} onSelect={this.onSelect}>Pick a random tribute</MenuItem>
 		</DropdownButton>);
+	}
+}
+
+class NewTributeInput extends Component{
+	constructor(props){
+		super(props);
+		this.checkInput = this.checkInput.bind(this);
+		this.state={
+			tribName: "",
+			tribNick: "",
+			tribGender: "",
+			tribDeathPicType: "BW",
+			tribPicUrl: "",
+			tribDeathPicUrl: "",
+			generatedDeathPic: ""
+		}
+		this.updateTribName = this.updateTribName.bind(this);
+		this.updateTribNick = this.updateTribNick.bind(this);
+		this.updateGender = this.updateGender.bind(this);
+		this.updateDeathPicType = this.updateDeathPicType.bind(this);
+		this.updatePicUrl = this.updatePicUrl.bind(this);
+		this.updateDeathPicUrl = this.updateDeathPicUrl.bind(this);
+		
+		this.resetInput = this.resetInput.bind(this);
+	}
+
+	
+	updateTribName(e){
+		this.setState({tribName: e.target.value});
+	}
+	
+	updateTribNick(e){
+		this.setState({tribNick: e.target.value});
+	}
+	
+	updateGender(e){
+		this.setState({tribGender: e.target.value});
+	}
+	
+	updateDeathPicType(e){
+		this.setState({tribDeathPicType: e.target.value});
+		if(e.target.value!=="Custom"){
+			this.setState({generatedDeathPic: this.state.tribPicUrl})
+		}
+	}
+	
+	updatePicUrl(e){
+		this.setState({tribPicUrl: e.target.value});
+	}
+	
+	updateDeathPicUrl(e){
+		this.setState({tribDeathPicUrl: e.target.value});
+	}
+	
+	componentDidMount(){
+
+	}
+	
+	componentDidUpdate(){
+		
+	}
+	
+	checkInput(e){
+		var st = this.state, pr = this.props, validURL = new RegExp("/^http(s)?:[//].+[.](jpg|jpeg|gif|bmp|png)$/i");
+		if(st.tribName===""||st.tribNick===""||st.tribPicUrl===""){
+			console.log("Cannot leave tribname, tribnick, or tribpic blank");
+		}
+		else{
+			var foundMatch = false;
+			for (var i = 0; i < pr.tribList.length; i++){
+				if(st.tribName===pr.tribList[i].fullname){
+					foundMatch = true;
+					break;
+				}
+			}
+			if(foundMatch){
+				console.log("Duplicate spotted");
+			}
+			else if(st.gender===""){
+				console.log("No gender selected");
+			}
+			else if(!validURL.test(st.tribPicUrl) ||(st.tribDeathPicType==="Custom" && !validURL.test(st.tribDeathPicUrl))){
+				console.log("Invalid image url");
+			}
+			else{
+				console.log("Input validated");
+				pr.hide();
+			}
+		}
+	}
+	resetInput(){
+		this.setState({tribName: "",
+			tribNick: "",
+			tribGender: "",
+			tribDeathPicType: "BW",
+			tribPicUrl: "",
+			tribDeathPicUrl: ""});
+	}
+	render(){
+		return(
+		<Modal backdrop="static" show={this.props.show} onHide={this.props.hide} onExited={this.resetInput}>
+			<Modal.Header closeButton>
+				<Modal.Title>Add new tribute</Modal.Title>
+			</Modal.Header>
+			<Modal.Body>
+				<Row>
+					<Col sm={8}>
+						<Form>
+							<FormGroup controlId="newTribName">
+								<InputGroup>
+									<InputGroup.Addon>Name</InputGroup.Addon>
+									<FormControl type="text" value = {this.state.tribName} onChange={this.updateTribName}/>
+								</InputGroup>
+							</FormGroup>
+							<FormGroup controlId="newTribNick">
+								<InputGroup>
+									<InputGroup.Addon>Nickname</InputGroup.Addon>
+									<FormControl type="text" value = {this.state.tribNick} onChange={this.updateTribNick}/>
+								</InputGroup>
+							</FormGroup>
+							<FormGroup controlId="newTribGender">
+								<InputGroup>
+									<InputGroup.Addon>Gender</InputGroup.Addon>
+									<FormControl componentClass="select" value = {this.state.tribGender} onChange={this.updateGender}>
+										<option disabled hidden></option>
+										<option value="M">Male</option>
+										<option value="F">Female</option>
+										<option value="N">Neuter</option>
+										<option value="I">Indeterminate</option>
+									</FormControl>
+								</InputGroup>
+							</FormGroup>
+							<FormGroup controlId="newTribDeathPicType">
+								<InputGroup>
+									<InputGroup.Addon>Death Pic</InputGroup.Addon>
+									<FormControl componentClass="select" value={this.state.tribDeathPicType} onChange={this.updateDeathPicType}>
+										<option value="BW">Grayscale</option>
+										<option value="N">Normal</option>
+										<option value="X">Cross mark</option>
+										<option value="Custom">Custom</option>
+									</FormControl>
+								</InputGroup>
+							</FormGroup>
+						</Form>
+					</Col>
+					<Col sm={4}>
+						<div className="imgInputHolder">
+							<img alt="Tribute pic" src="default.png" height={100} width={100}/>
+							<div className="middle">
+								<FormControl type="text" id="newTribPicUrl" bsSize="sm" placeholder="Enter image URL here" value={this.state.tribPicUrl} onChange={this.updatePicUrl}/>
+							</div>
+						</div>
+						<br/><br/>
+						<div className="imgInputHolder">
+							<img alt="Death pic" src={this.state.generatedDeathPic} height={100} width={100}/>
+							<div className="middle">
+							{this.state.tribDeathPicType === "Custom" && <FormControl type="text" id="newTribDeathPicUrl" bsSize="sm" placeholder="Enter image URL here" value={this.state.tribDeathPicUrl} onChange={this.updateDeathPicUrl}/>}
+							</div>
+						</div>
+					</Col>
+				</Row>
+			</Modal.Body>
+			<Modal.Footer>
+				<Button bsStyle="default" onClick={this.checkInput}>Submit</Button>
+				<Button bsStyle="danger" onClick={this.props.hide}>Cancel</Button>
+			</Modal.Footer>
+		</Modal>
+		);
 	}
 }
 
