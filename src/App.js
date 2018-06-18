@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import {Grid, Row, Col, Collapse, Form, FormGroup, ControlLabel, FormControl,
-		DropdownButton, MenuItem, Modal, InputGroup, Button} from 'react-bootstrap';
+		DropdownButton, MenuItem, Modal, InputGroup, Button, ButtonGroup} from 'react-bootstrap';
 import ArenaEvent, {DefaultEvent} from './defaultEvent';
 import SpecialArenaEvent, {DefaultSpecialEvent} from './defaultSpecialEvent';
 
@@ -465,8 +465,6 @@ class TributePicker extends Component{
 	
 	componentWillReceiveProps(){
 		var pr = this.props, options = [];
-		
-		console.log("Load prop into state");
 		for (var i = 0; i < pr.tribList.length; i++){
 			options.push({id: pr.tribList[i].id, fullname: pr.tribList[i].fullname});
 		}
@@ -551,6 +549,42 @@ class TributePicker extends Component{
 				<Button bsStyle = "danger" onClick = {pr.hide}>Cancel</Button>
 			</Modal.Footer>
 		</Modal>)
+	}
+}
+
+class EventDBScreen extends Component{
+	render(){
+		var eventList = [], arenaEventList = [], pr = this.props;
+		for (var i = 0; i < pr.arenaEvent.length; i++){
+			eventList.push(<option key = {i}>{pr.arenaEvent[i].eventText}</option>);
+		}
+		for (i = 0; i < pr.specialArenaEvent.length; i++){
+			arenaEventList.push(<option key = {i}>{pr.specialArenaEvent[i].leadText}</option>);
+		}		
+		return (<div>
+			<Row>
+				<Col sm={10}><select size={10}>{eventList}</select></Col>
+				<Col sm={2}>
+					<ButtonGroup vertical bsSize="sm">
+						<Button>Add new event</Button>
+						<Button>Edit event</Button>
+						<Button>Delete event</Button>
+						<Button>Restore defaults</Button>
+					</ButtonGroup>
+				</Col>
+			</Row>
+			<Row>
+				<Col sm={10}><select size={5}>{arenaEventList}</select></Col>
+				<Col sm={2}>
+					<ButtonGroup vertical bsSize="sm">
+						<Button>Add new arena event</Button>
+						<Button>Edit arena event</Button>
+						<Button>Delete arena event</Button>
+						<Button>Restore defaults</Button>
+					</ButtonGroup>
+				</Col>
+			</Row>
+		</div>);
 	}
 }
 
