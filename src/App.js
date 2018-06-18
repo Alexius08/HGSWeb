@@ -560,17 +560,79 @@ class TributePicker extends Component{
 }
 
 class EventDBScreen extends Component{
+	constructor(props){
+		super(props)
+		this.state = {
+			selectedEvent: new ArenaEvent(),
+			selectedEventIndex: -1
+		}
+		this.getSelectedEvent = this.getSelectedEvent.bind(this);
+	}
+	
+	getSelectedEvent(e){
+		this.setState({selectedEvent: this.props.arenaEvent[e.target.value],
+						selectedEventIndex: e.target.value});
+		console.log("Getting event no. " + e.target.value)
+		console.log(this.props.arenaEvent[e.target.value]);
+	}
+	
 	render(){
-		var eventList = [], arenaEventList = [], pr = this.props;
+		var eventList = [], arenaEventList = [], pr = this.props, st = this.state;
 		for (var i = 0; i < pr.arenaEvent.length; i++){
-			eventList.push(<option key = {i}>{pr.arenaEvent[i].eventText}</option>);
+		eventList.push(<option key = {i} value = {i}>{pr.arenaEvent[i].eventText}</option>);
 		}
 		for (i = 0; i < pr.specialArenaEvent.length; i++){
 			arenaEventList.push(<option key = {i}>{pr.specialArenaEvent[i].leadText}</option>);
-		}		
+		}
+		
+		if (st.selectedEventIndex > -1){
+			var scope = [];
+			if (st.selectedEvent.isBloodbathEvent()) scope.push("Bloodbath");
+			if (st.selectedEvent.isDayEvent()) scope.push("Day");
+			if (st.selectedEvent.isNightEvent()) scope.push("Night");
+			if (st.selectedEvent.isFeastEvent()) scope.push("Feast");
+			var scopeList = scope[0];
+			if (scope.length > 1){
+				for (i = 1; i < scope.length; i++){
+					scopeList += ", " + scope[i]
+				}
+			}
+			
+			var killers = [], victims = [], killerList = "", killedList = "";
+			if (st.selectedEvent.deaths() > 0){
+				for (i = 0; i < st.selectedEvent.playerCount; i++){
+					if (st.selectedEvent.p[i].isKiller){
+						killers.push(i);
+					}
+					if (st.selectedEvent.p[i].deathType > 0){
+						victims.push(i);
+					}
+				}
+				
+				for (i = 0; i < killers.length; i++){
+					killerList += (i > 0 ? ", " : "") + "Player" + (killers[i] + 1);
+				}
+				for (i = 0; i < victims.length; i++){
+					killedList += (i > 0 ? ", " : "") + "Player" + (victims[i] + 1);
+				}
+			}
+			
+			var eventDesc = (<div>
+			{st.selectedEvent.eventText}<br/>
+			Event scope: {scopeList}<br/>
+			Killer: {killers.length > 0 ? killerList : "None"}<br/>
+			Killed: {victims.length > 0 ? killedList : "None"}
+			</div>)
+		}
+
+		
 		return (<div>
 			<Row>
-				<Col sm={10}><select size={10}>{eventList}</select></Col>
+				<Col sm={10}>
+					<select size={10} value = {this.state.selectedEventIndex} onChange = {this.getSelectedEvent}>{eventList}</select>
+					<br/>
+					{this.state.selectedEventIndex == -1 ? "Click on an event in the list to see its description" : eventDesc}
+				</Col>
 				<Col sm={2}>
 					<ButtonGroup vertical bsSize="sm">
 						<Button>Add new event</Button>
