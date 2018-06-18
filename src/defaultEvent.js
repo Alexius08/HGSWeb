@@ -130,14 +130,14 @@ for (var i = 0; i < DefaultText.length; i++){
 		DefaultEvent[i].p[0].deathType = 1;
 	}
 	else if(i === 125){
-		DefaultEvent[i].p[3].deathType = 1;
-		DefaultEvent[i].p[4].deathType = 1;
-		DefaultEvent[i].p[5].deathType = 1;
+		for (j = 3; j < 6; j++){
+			DefaultEvent[i].p[j].deathType = 1;
+		}
 	}
 	else if(i === 126){
-		DefaultEvent[i].p[0].deathType = 1;
-		DefaultEvent[i].p[1].deathType = 1;
-		DefaultEvent[i].p[2].deathType = 1;
+		for (j = 0; j < 3; j++){
+			DefaultEvent[i].p[j].deathType = 1;
+		}
 	}
 	else if(i === 166){
 		DefaultEvent[i].p[1].deathType = 1;
@@ -182,14 +182,14 @@ for (var i = 0; i < DefaultText.length; i++){
 	
 	//set kill attribution
 	if (i === 125){
-		DefaultEvent[i].p[0].isKiller = true;
-		DefaultEvent[i].p[1].isKiller = true;
-		DefaultEvent[i].p[2].isKiller = true;
+		for (j = 0; j < 3; j++){
+			DefaultEvent[i].p[j].isKiller = true;
+		}	
 	}
 	else if (i === 126){
-		DefaultEvent[i].p[3].isKiller = true;
-		DefaultEvent[i].p[4].isKiller = true;
-		DefaultEvent[i].p[5].isKiller = true;		
+		for (j = 3; j < 6; j++){
+			DefaultEvent[i].p[j].isKiller = true;
+		}	
 	}
 	else if (i > 126 && i < 131){
 		for (j = 0; j < DefaultEvent[i].playerCount - 2; j++){

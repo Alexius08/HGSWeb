@@ -50,22 +50,18 @@ for(var i = 0; i < DefaultText.length; i++){
 	for (var j = 0; j < 5; j++){
 		DefaultSpecialEvent[i].fatalEvent[j].eventText = DefaultSubText[i][j] + ".";
 	}
+	if (i == 2 || i == 7 || i == 12){
+		DefaultSpecialEvent[i].fatalEvent[4].p[0].deathType = 2;
+		DefaultSpecialEvent[i].fatalEvent[4].p[1].deathType = 2;
+	}
 }
 
 DefaultSpecialEvent[1].fatalEvent[4].p = [{isKiller: true, deathType: 1},{isKiller: true, deathType: 1}];
 
 DefaultSpecialEvent[2].fatalEvent[1].playerCount = 2;
 DefaultSpecialEvent[2].fatalEvent[1].p = [{isKiller: false, deathType: 2},{isKiller: false, deathType: 0}];
-DefaultSpecialEvent[2].fatalEvent[4].p[0].deathType = 2;
-DefaultSpecialEvent[2].fatalEvent[4].p[1].deathType = 2;
-
-DefaultSpecialEvent[7].fatalEvent[4].p[0].deathType = 2;
-DefaultSpecialEvent[7].fatalEvent[4].p[1].deathType = 2;
 
 DefaultSpecialEvent[10].fatalEvent[4].p = [{isKiller: true, deathType: 3},{isKiller: false, deathType: 1}];
-
-DefaultSpecialEvent[12].fatalEvent[4].p[0].deathType = 2;
-DefaultSpecialEvent[12].fatalEvent[4].p[1].deathType = 2;
 
 export default SpecialArenaEvent;
 export {DefaultSpecialEvent};
