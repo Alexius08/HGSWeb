@@ -563,23 +563,32 @@ class EventDBScreen extends Component{
 	constructor(props){
 		super(props)
 		this.state = {
-			selectedEvent: new ArenaEvent(),
-			selectedEventIndex: -1
+			selectedEvent: new ArenaEvent("", 0, 0, []),
+			selectedEventIndex: -1,
+			eventSearchTerm: ""
 		}
 		this.getSelectedEvent = this.getSelectedEvent.bind(this);
+		this.updateEventFilter = this.updateEventFilter.bind(this);
 	}
 	
 	getSelectedEvent(e){
 		this.setState({selectedEvent: this.props.arenaEvent[e.target.value],
 						selectedEventIndex: e.target.value});
-		console.log("Getting event no. " + e.target.value)
-		console.log(this.props.arenaEvent[e.target.value]);
+	}
+	
+	updateEventFilter(e){
+		this.setState({eventSearchTerm: e.target.value});
+		if (this.state.selectedEvent.eventText.toLowerCase().indexOf(e.target.value) === -1){
+			this.setState({selectedEventIndex: -1});
+		}
 	}
 	
 	render(){
 		var eventList = [], arenaEventList = [], pr = this.props, st = this.state;
 		for (var i = 0; i < pr.arenaEvent.length; i++){
-		eventList.push(<option key = {i} value = {i}>{pr.arenaEvent[i].eventText}</option>);
+			if(pr.arenaEvent[i].eventText.toLowerCase().indexOf(st.eventSearchTerm) > -1){
+				eventList.push(<option key = {i} value = {i}>{pr.arenaEvent[i].eventText}</option>);
+			}
 		}
 		for (i = 0; i < pr.specialArenaEvent.length; i++){
 			arenaEventList.push(<option key = {i}>{pr.specialArenaEvent[i].leadText}</option>);
@@ -601,14 +610,9 @@ class EventDBScreen extends Component{
 			var killers = [], victims = [], killerList = "", killedList = "";
 			if (st.selectedEvent.deaths() > 0){
 				for (i = 0; i < st.selectedEvent.playerCount; i++){
-					if (st.selectedEvent.p[i].isKiller){
-						killers.push(i);
-					}
-					if (st.selectedEvent.p[i].deathType > 0){
-						victims.push(i);
-					}
+					if (st.selectedEvent.p[i].isKiller) killers.push(i);
+					if (st.selectedEvent.p[i].deathType > 0) victims.push(i);
 				}
-				
 				for (i = 0; i < killers.length; i++){
 					killerList += (i > 0 ? ", " : "") + "Player" + (killers[i] + 1);
 				}
@@ -624,14 +628,14 @@ class EventDBScreen extends Component{
 			Killed: {victims.length > 0 ? killedList : "None"}
 			</div>)
 		}
-
 		
 		return (<div>
 			<Row>
 				<Col sm={10}>
-					<select size={10} value = {this.state.selectedEventIndex} onChange = {this.getSelectedEvent}>{eventList}</select>
+					<FormControl type = "text" placeholder = "Search event" value = {st.eventSearchTerm} onChange = {this.updateEventFilter}/>
+					<select size={10} value = {st.selectedEventIndex} onChange = {this.getSelectedEvent}>{eventList}</select>
 					<br/>
-					{this.state.selectedEventIndex == -1 ? "Click on an event in the list to see its description" : eventDesc}
+					{st.selectedEventIndex === -1 ? "Click on an event in the list to see its description" : eventDesc}
 				</Col>
 				<Col sm={2}>
 					<ButtonGroup vertical bsSize="sm">
@@ -643,7 +647,7 @@ class EventDBScreen extends Component{
 				</Col>
 			</Row>
 			<Row>
-				<Col sm={10}><select size={5}>{arenaEventList}</select></Col>
+				<Col sm={10}><select size = {5}>{arenaEventList}</select></Col>
 				<Col sm={2}>
 					<ButtonGroup vertical bsSize="sm">
 						<Button>Add new arena event</Button>
