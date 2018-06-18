@@ -16,8 +16,8 @@ class App extends Component{
 		activePane: "main",
 		
 		advancedMode: false
-		
 	}
+	this.updateMenu = this.updateMenu.bind(this);
   }
 	componentDidMount(){
 		if(localStorage.getItem("HGTribute")!=null){
@@ -50,7 +50,7 @@ class App extends Component{
 		
 		if(localStorage.getItem("HGEvent") != null){
 			console.log("Event database detected");
-			var evt=JSON.parse(localStorage.HGEvent);
+			var evt = JSON.parse(localStorage.HGEvent);
 			for (i = 0; i < evt.length; i++){
 				evt[i] = Object.assign(new ArenaEvent(), evt[i])
 			}
@@ -92,32 +92,39 @@ class App extends Component{
 			console.log("Arena event database updated");
 		}		
 	}
-  render() {
-	var st = this.state;
-    return (
-	<Grid>
-		<Row>
-			<Col sm = {2} className = "nav-side-menu">
-				<div className = "brand">Hunger Games Simulator</div>
-				<i className = "fa fa-bars fa-2x toggle-btn" onClick={() => this.setState({showMenu: !st.showMenu})}>Menu</i>
-				<div className="menu-list">
-					<Collapse in = {st.showMenu}>
-						<ul className = "menu-content">
-							<li className = "active">Simulate</li>
-							<li>Tribute Database</li>
-							<li>Event List</li>
-							<li>Settings</li>
-						</ul>
-					</Collapse>
-				</div>
-			</Col>
-			<Col sm = {10} id = "main">
-				<ReapingScreen availableTribute = {st.tribute}/>
-			</Col>
-		</Row>			
-	</Grid>);
-  }
-}
+	updateMenu(e){
+		this.setState({activePane: e.target.id});
+	}
+	
+	render() {
+		var st = this.state, menuItem = ["main", "tribDb", "eventList", "settings"],
+			optText = ["Simulate", "Tribute Database", "Event List", "Settings"], options = [];
+		
+		for (var i = 0; i < 4; i++){
+			options.push(<li key = {i} id = {menuItem[i]} onClick = {this.updateMenu}
+				className = {st.activePane === menuItem[i] ? "active" : null}>{optText[i]}</li>)
+		}
+		
+		return (
+		<Grid>
+			<Row>
+				<Col sm = {2} className = "nav-side-menu">
+					<div className = "brand">Hunger Games Simulator</div>
+					<i className = "fa fa-bars fa-2x toggle-btn" onClick = {() => this.setState({showMenu: !st.showMenu})}>Menu</i>
+					<div className = "menu-list">
+						<Collapse in = {st.showMenu}>
+							<ul className = "menu-content">{options}</ul>
+						</Collapse>
+					</div>
+				</Col>
+				<Col sm = {10} id = "display">
+					{st.activePane === "main" && <ReapingScreen availableTribute = {st.tribute}/>}
+					{st.activePane === "eventList" && <EventDBScreen arenaEvent = {st.arenaEvent} specialArenaEvent = {st.specialArenaEvent} />}
+				</Col>
+			</Row>			
+		</Grid>);
+	  }
+	}
 
 function Player(id, fullname, nickname, gender, imageUrl, deathImage){
 	this.id = id;

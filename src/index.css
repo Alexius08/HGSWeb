@@ -109,12 +109,13 @@
     line-height: 50px !important;
   }
 }
-@media (min-width: 768px) {
+@media (min-width: 767px) {
   .nav-side-menu .menu-list .menu-content {
     display: block;
   }
-  #main {
+  #display {
   	/*width:calc(100% - 200px);*/
+	padding-top: 10px;
 	padding-left: 40px;
   	float: right;
   }
