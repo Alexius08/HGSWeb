@@ -146,11 +146,14 @@ class ReapingScreen extends Component{
 			
 			recentPick: -1,
 			
-			showTributeInput: false
+			showTributeInput: false,
+			showTributePicker: false
 		}
 		this.updateState = this.updateState.bind(this);
 		this.showTributeInput = this.showTributeInput.bind(this);
 		this.hideTributeInput = this.hideTributeInput.bind(this);
+		this.showTributePicker = this.showTributePicker.bind(this);
+		this.hideTributePicker = this.hideTributePicker.bind(this);
 	}
 	componentDidMount(){
 		console.log("Initial number of tributes: " + this.state.curTributes.length);
@@ -198,6 +201,14 @@ class ReapingScreen extends Component{
 	hideTributeInput(){
 		this.setState({showTributeInput: false});
 	}
+	
+	showTributePicker(){
+		this.setState({showTributePicker: true});
+	}
+	hideTributePicker(){
+		this.setState({showTributePicker: false});
+	}
+	
 	render(){
 		var tableContents = [], st = this.state, pr = this.props;
 		for (var i = 0; i < st.distCount; i++){
@@ -205,7 +216,8 @@ class ReapingScreen extends Component{
 			for (var j = 0; j < st.tribsPerDist; j++){
 				var cellNo = j * st.distCount + i;
 				rowContents.push(<td key = {cellNo}>
-				<TributeInput id = {cellNo} name = {""} tribList = {pr.availableTribute} showTributeInput = {this.showTributeInput}/>
+				<TributeInput id = {cellNo} name = {""} tribList = {pr.availableTribute}
+					showTributeInput = {this.showTributeInput} showTributePicker = {this.showTributePicker}/>
 				</td>) //name in tributeinput must correspond to default or previous roster
 			}
 			tableContents.push(<tr key = {i}>{rowContents}</tr>);
@@ -219,7 +231,7 @@ class ReapingScreen extends Component{
 					</Col>
 					<Col>
 						<FormControl className = "numUpDown" type = "number" bsSize = "sm"
-						min={2} max={8} value = {st.tribsPerDist} onChange = {this.updateState} />
+						min = {2} max = {8} value = {st.tribsPerDist} onChange = {this.updateState} />
 					</Col>
 				</FormGroup>
 				<FormGroup controlId = "numDistricts">
@@ -235,7 +247,8 @@ class ReapingScreen extends Component{
 			<table>
 				<tbody>{tableContents}</tbody>
 			</table>
-			<NewTributeInput show={st.showTributeInput} hide={this.hideTributeInput} tribList={pr.availableTribute}/>
+			<NewTributeInput show = {st.showTributeInput} hide = {this.hideTributeInput} tribList = {pr.availableTribute}/>
+			<TributePicker show = {st.showTributePicker} hide = {this.hideTributePicker} tribList = {pr.availableTribute}/>
 		</div>);
 	}
 }
@@ -260,7 +273,7 @@ class TributeInput extends Component{
 		var pr = this.props;
 		return(<DropdownButton bsStyle = "primary" title = {(pr.name === "" ? "Empty slot" : pr.name)} id = {"selectTrib" + pr.id}>
 				<MenuItem eventKey = {0} onClick = {pr.showTributeInput} onSelect = {this.onSelect}>Add new tribute</MenuItem>
-				<MenuItem eventKey = {1} onSelect = {this.onSelect}>Select existing tribute</MenuItem>
+				<MenuItem eventKey = {1} onClick = {pr.showTributePicker} onSelect = {this.onSelect}>Select existing tribute</MenuItem>
 				<MenuItem eventKey = {2} onSelect = {this.onSelect}>Pick a random tribute</MenuItem>
 		</DropdownButton>);
 	}
@@ -280,6 +293,7 @@ class NewTributeInput extends Component{
 			generatedDeathPic: ""
 		}
 		this.updateTribName = this.updateTribName.bind(this);
+		this.setDefaultNick = this.setDefaultNick.bind(this);
 		this.updateTribNick = this.updateTribNick.bind(this);
 		this.updateGender = this.updateGender.bind(this);
 		this.updateDeathPicType = this.updateDeathPicType.bind(this);
@@ -291,6 +305,12 @@ class NewTributeInput extends Component{
 	
 	updateTribName(e){
 		this.setState({tribName: e.target.value});
+	}
+	
+	setDefaultNick(e){
+		if(this.state.tribNick === ""){
+			this.setState({tribNick: e.target.value});
+		}
 	}
 	
 	updateTribNick(e){
@@ -367,7 +387,7 @@ class NewTributeInput extends Component{
 							<FormGroup controlId = "newTribName">
 								<InputGroup>
 									<InputGroup.Addon>Name</InputGroup.Addon>
-									<FormControl type = "text" value = {st.tribName} onChange = {this.updateTribName}/>
+									<FormControl type = "text" value = {st.tribName} onChange = {this.updateTribName} onBlur = {this.setDefaultNick}/>
 								</InputGroup>
 							</FormGroup>
 							<FormGroup controlId = "newTribNick">
@@ -401,7 +421,7 @@ class NewTributeInput extends Component{
 							</FormGroup>
 						</Form>
 					</Col>
-					<Col sm={4}>
+					<Col sm = {4}>
 						<div className = "imgInputHolder">
 							<img alt = "Tribute pic" src = "default.png" height = {100} width = {100}/>
 							<div className = "middle">
@@ -412,7 +432,7 @@ class NewTributeInput extends Component{
 						<br/><br/>
 						<div className = "imgInputHolder">
 							<img alt="Death pic" src = {st.generatedDeathPic} height = {100} width = {100}/>
-							<div className="middle">
+							<div className = "middle">
 							{st.tribDeathPicType === "Custom" && <FormControl type = "text" id = "newTribDeathPicUrl" bsSize = "sm"
 							placeholder = "Enter image URL here" value = {st.tribDeathPicUrl} onChange = {this.updateDeathPicUrl}/>}
 							</div>
@@ -426,6 +446,111 @@ class NewTributeInput extends Component{
 			</Modal.Footer>
 		</Modal>
 		);
+	}
+}
+
+class TributePicker extends Component{
+	constructor(props){
+		super(props);
+		this.state = {
+			currentList: [],
+			displayedList: [],
+			searchTerm: ""
+		}
+		this.updateOptionFilter = this.updateOptionFilter.bind(this);
+		this.sortByName = this.sortByName.bind(this);
+		this.sortById = this.sortById.bind(this);
+		this.showSortedSearch = this.showSortedSearch.bind(this);
+	}
+	
+	componentWillReceiveProps(){
+		var pr = this.props, options = [];
+		
+		console.log("Load prop into state");
+		for (var i = 0; i < pr.tribList.length; i++){
+			options.push({id: pr.tribList[i].id, fullname: pr.tribList[i].fullname});
+		}
+		this.setState({currentList: [...options], displayedList: [...options]});
+	}
+	
+	updateOptionFilter(e){
+		var newList = [], st = this.state;
+		for (var i = 0; i < st.currentList.length; i++){
+			if(st.currentList[i].fullname.toLowerCase().indexOf(e.target.value.toLowerCase())>-1){
+				newList.push({id: st.currentList[i].id, fullname: st.currentList[i].fullname})
+			};
+		}
+		this.setState({searchTerm: e.target.value, displayedList: [...newList]});
+	}
+	
+	sortByName(){
+		var switched = true, b = [...this.state.currentList];
+		while (switched){
+			switched = false;
+			for (var i = 0; i < (b.length - 1); i++){
+				if(b[i].fullname.toLowerCase() > b[i + 1].fullname.toLowerCase()){
+					[b[i], b[i + 1]] = [b[i + 1], b[i]];
+					switched = true;
+					break;
+				}
+			}
+		}
+		this.showSortedSearch(b);
+	}
+	
+	sortById(){
+		var switched = true, b = [...this.state.currentList];
+		while (switched){
+			switched = false;
+			for (var i = 0; i < (b.length - 1); i++){
+				if(b[i].id > b[i + 1].id){
+					[b[i], b[i + 1]] = [b[i + 1], b[i]];
+					switched = true;
+					break;
+				}
+			}
+		}
+		this.showSortedSearch(b);
+	}
+	
+	showSortedSearch(source){
+		var newList = [];
+		for (var i = 0; i < source.length; i++){
+			if(source[i].fullname.toLowerCase().indexOf(this.state.searchTerm.toLowerCase())>-1){
+				newList.push({id: source[i].id, fullname: source[i].fullname})
+			};
+		}
+		this.setState({displayedList: [...newList], currentList: [...source]});
+	}
+
+	render(){
+		var pr = this.props, st = this.state, options = [];
+		for (var i = 0; i < st.displayedList.length; i++){
+			options.push(<option key = {i} value = {st.displayedList[i].id} > {st.displayedList[i].fullname}</option>)
+		}
+
+		return(
+		<Modal backdrop = "static" show = {pr.show} onHide = {pr.hide}>
+			<Modal.Header closeButton>
+				<Modal.Title>Select from existing tributes</Modal.Title>
+			</Modal.Header>
+			<Modal.Body>
+				<Row>
+					<Col sm = {4}>
+						<FormControl type = "text" placeholder = "Search by name" value = {st.searchTerm} onChange = {this.updateOptionFilter}/>
+						<FormControl componentClass = "select" size = {8}>
+							{options}
+						</FormControl>
+						<Button onClick = {this.sortByName}>Sort by name</Button>
+						<Button onClick = {this.sortById}>Sort by ID</Button>
+					</Col>
+				</Row>
+			</Modal.Body>
+			<Modal.Footer>
+				<Button bsStyle = "default">Submit</Button>
+				<Button bsStyle = "danger" onClick = {pr.hide}>Cancel</Button>
+			</Modal.Footer>
+		</Modal>)
 	}
 }
 
