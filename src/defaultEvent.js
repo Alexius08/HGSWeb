@@ -84,7 +84,7 @@ for (var i = 0; i < DefaultText.length; i++){
 	if (i > 65 && i < 112){
 		DefaultEvent[i].scope += 4;
 	}
-	if ((i > 123 && i < 181)||i > 186){
+	if ((i > 122 && i < 182)||i > 186){
 		DefaultEvent[i].scope += 6;
 	}
 	if (i > 111 && i < 182){
@@ -92,19 +92,19 @@ for (var i = 0; i < DefaultText.length; i++){
 	}
 	
 	//set player count
-	if (i < 20||(i > 27 && i < 48)||[60, 123, 124].indexOf(i)>-1||(i > 65 && i < 73)||(i > 75 && i < 96)||(i > 111 && i < 116)||(i > 177 && i < 182)){
+	if (i < 20||(i > 27 && i < 48)||[60, 123, 124].indexOf(i) > -1||(i > 65 && i < 73)||(i > 75 && i < 96)||(i > 111 && i < 116)||(i > 177 && i < 182)){
 		DefaultEvent[i].playerCount = 1;
 	}
-	else if([26, 59, 62, 98, 109, 121, 130, 170].indexOf(i)>-1||(i > 161 && i < 169)){
+	else if([26, 59, 62, 98, 109, 121, 130, 170].indexOf(i) > -1||(i > 161 && i < 169)){
 		DefaultEvent[i].playerCount = 3;
 	}
-	else if([27, 63, 97, 110, 111, 122, 129, 171, 175, 176, 177].indexOf(i)>-1||i > 201){
+	else if([27, 63, 97, 110, 111, 122, 129, 171, 175, 176, 177].indexOf(i) > -1||i > 201){
 		DefaultEvent[i].playerCount = 4;
 	}
-	else if([58, 64, 96, 128, 172].indexOf(i)>-1){
+	else if([58, 64, 96, 128, 172].indexOf(i) > -1){
 		DefaultEvent[i].playerCount = 5;
 	}
-	else if([65, 125, 126, 127, 173].indexOf(i)>-1){
+	else if([65, 125, 126, 127, 173].indexOf(i) > -1){
 		DefaultEvent[i].playerCount = 6;
 	}
 	else DefaultEvent[i].playerCount = 2;
@@ -120,13 +120,13 @@ for (var i = 0; i < DefaultText.length; i++){
 	if (i === 123||i === 124||(i > 192 && i < 199)){
 		DefaultEvent[i].p[0].deathType = 3;
 	}
-	else if([169, 183, 186, 203].indexOf(i)>-1||(i > 126 && i < 161)||(i > 162 && i < 166)||(i > 188 && i < 193)){
+	else if([169, 183, 186, 203].indexOf(i) > -1||(i > 126 && i < 161)||(i > 162 && i < 166)||(i > 188 && i < 193)){
 		DefaultEvent[i].p[DefaultEvent[i].playerCount - 1].deathType = 1;
 	}
-	else if((i > 177 && i < 182)||[188, 199, 200].indexOf(i)>-1){
+	else if((i > 177 && i < 183)||[188, 199, 200].indexOf(i) > -1){
 		DefaultEvent[i].p[0].deathType = 2;
 	}
-	else if([161, 162, 184, 185, 187, 205].indexOf(i)>-1){
+	else if([161, 162, 184, 185, 187, 205].indexOf(i) > -1){
 		DefaultEvent[i].p[0].deathType = 1;
 	}
 	else if(i === 125){
@@ -156,13 +156,9 @@ for (var i = 0; i < DefaultText.length; i++){
 			DefaultEvent[i].p[j].deathType = 1;
 		}
 	}
-	else if (i === 174){
-		DefaultEvent[i].p[0].deathType = 2;
-		DefaultEvent[i].p[1].deathType = 2;
-	}
-	else if (i === 175){
-		for (j = 0; j < 3; j++){
-			DefaultEvent[i].p[j].deathType = 1;
+	else if (i === 174||i === 175){
+		for (j = 0; j < DefaultEvent[i].playerCount; j++){
+			DefaultEvent[i].p[j].deathType = 2;
 		}
 	}
 	else if (i === 176){
@@ -192,31 +188,31 @@ for (var i = 0; i < DefaultText.length; i++){
 		}	
 	}
 	else if (i > 126 && i < 131){
-		for (j = 0; j < DefaultEvent[i].playerCount - 2; j++){
+		for (j = 0; j < DefaultEvent[i].playerCount - 1; j++){
 			DefaultEvent[i].p[j].isKiller = true;
 		}		
 	}
-	else if ([165, 173, 202, 203].indexOf(i)>-1){
+	else if ([165, 176, 202, 203].indexOf(i) > -1){
 		DefaultEvent[i].p[0].isKiller = true;
 		DefaultEvent[i].p[1].isKiller = true;
 	}
 	else if (i === 162||i === 168){
 		DefaultEvent[i].p[2].isKiller = true;
 	}
-	else if([167, 184, 185, 187, 205].indexOf(i)>-1){
+	else if([161, 167, 184, 185, 187, 205].indexOf(i) > -1){
 		DefaultEvent[i].p[1].isKiller = true;
 	}
 	else if(i === 177){
 		DefaultEvent[i].p[2].isKiller = true;
 		DefaultEvent[i].p[3].isKiller = true;
 	}
-	else if(i > 125){
+	else if(i < 125||[174, 175, 188].indexOf(i) > -1||(i > 177 && i < 183)||(i > 192 && i < 201)){
 		DefaultEvent[i].p[0].isKiller = false;
 	}
 	else DefaultEvent[i].p[0].isKiller = true;
 	
 	 //set shared kill
-	DefaultEvent[i].isSharedKill = (i > 124 && i < 131)||[165, 176, 177, 202, 203].indexOf(i)>-1;
+	DefaultEvent[i].isSharedKill = (i > 124 && i < 131)||[165, 176, 177, 202, 203].indexOf(i) > -1;
 }
 
 export default ArenaEvent;
