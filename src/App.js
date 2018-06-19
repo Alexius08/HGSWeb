@@ -172,31 +172,38 @@ class ReapingScreen extends Component{
 		this.setState({"curTributes": newArr});
 	}
 	updateState(e){
-		var newVal = e.target.value, st = this.state;
-		var old = st.curTributes.slice(), newCount = 0;
-		if (e.target.id === "tributesPerDistrict"){
-			this.setState({"tribsPerDist": newVal});
-			newCount = newVal * st.distCount;					
-		}
-		else{
-			this.setState({"distCount": newVal});
-			newCount = newVal * st.tribsPerDist;
-		}
-		if (st.curTributes.length > newCount){
-			var extras = st.curTributes.length - newCount;
-			for (var i = 0; i < extras; i++){
-				old.pop();
+		if (isFinite(e.target.value)){
+			var newVal = e.target.value, st = this.state;
+			var old = st.curTributes.slice(), newCount = 0;
+			if (e.target.id === "tributesPerDistrict"){
+				if(newVal > 1 && newVal < 9){
+					this.setState({"tribsPerDist": newVal});
+					newCount = newVal * st.distCount;
+				}
 			}
-			console.log(extras + " elements to be removed");
-		}
-		else{
-			var missing = newCount - st.curTributes.length;
-			for (i = 0; i < missing; i++){
-				old.push("");
+			else{
+				if(newVal > 10 && newVal < 15){
+					this.setState({"distCount": newVal});
+					newCount = newVal * st.tribsPerDist;
+				}
 			}
-			console.log(missing + " elements to be added");
+			
+			if (st.curTributes.length > newCount){
+				var extras = st.curTributes.length - newCount;
+				for (var i = 0; i < extras; i++){
+					old.pop();
+				}
+				console.log(extras + " elements to be removed");
+			}
+			if (st.curTributes.length < newCount){
+				var missing = newCount - st.curTributes.length;
+				for (i = 0; i < missing; i++){
+					old.push("");
+				}
+				console.log(missing + " elements to be added");
+			}
+			this.setState({"curTributes": [...old]});
 		}
-		this.setState({"curTributes": [...old]});
 	}
 	componentDidUpdate(){
 		console.log("Current amount of tributes: " + this.state.curTributes.length);
