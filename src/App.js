@@ -572,15 +572,22 @@ class EventDBScreen extends Component{
 		this.state = {
 			selectedEvent: new ArenaEvent("", 0, 0, []),
 			selectedEventIndex: -1,
-			eventSearchTerm: ""
+			eventSearchTerm: "",
+			
+			selectedArenaEventIndex: -1
 		}
 		this.getSelectedEvent = this.getSelectedEvent.bind(this);
+		this.getSelectedArenaEvent = this.getSelectedArenaEvent.bind(this);
 		this.updateEventFilter = this.updateEventFilter.bind(this);
 	}
 	
 	getSelectedEvent(e){
 		this.setState({selectedEvent: this.props.arenaEvent[e.target.value],
 						selectedEventIndex: e.target.value});
+	}
+	
+	getSelectedArenaEvent(e){
+		this.setState({selectedArenaEventIndex: e.target.value});
 	}
 	
 	updateEventFilter(e){
@@ -592,14 +599,18 @@ class EventDBScreen extends Component{
 	
 	render(){
 		var eventList = [], arenaEventList = [], pr = this.props, st = this.state;
+
 		for (var i = 0; i < pr.arenaEvent.length; i++){
 			if(pr.arenaEvent[i].eventText.toLowerCase().indexOf(st.eventSearchTerm) > -1){
 				eventList.push(<option key = {i} value = {i}>{pr.arenaEvent[i].eventText}</option>);
 			}
 		}
+		if (eventList.length > 0) eventList.unshift(<option key = {-1} value = {-1} disabled hidden></option>);
+		
 		for (i = 0; i < pr.specialArenaEvent.length; i++){
 			arenaEventList.push(<option key = {i}>{pr.specialArenaEvent[i].leadText}</option>);
 		}
+		if (arenaEventList.length > 0) arenaEventList.unshift(<option key = {-1} value = {-1} disabled hidden></option>);
 		
 		if (st.selectedEventIndex > -1){
 			var scope = [];
@@ -640,12 +651,11 @@ class EventDBScreen extends Component{
 			<Row>
 				<Col sm={10}>
 					<FormControl type = "text" placeholder = "Search event" value = {st.eventSearchTerm} onChange = {this.updateEventFilter}/>
-					<select size={10} value = {st.selectedEventIndex} onChange = {this.getSelectedEvent}>{eventList}</select>
-					<br/>
-					{st.selectedEventIndex === -1 ? "Click on an event in the list to see its description" : eventDesc}
+					<select size = {10} value = {st.selectedEventIndex} onChange = {this.getSelectedEvent}>{eventList}</select>
+					{st.selectedEventIndex === -1 ? (<div>Click on an event in the list to see its description<br/><br/><br/><br/></div>) : eventDesc}
 				</Col>
 				<Col sm={2}>
-					<ButtonGroup vertical bsSize="sm">
+					<ButtonGroup vertical bsSize = "sm">
 						<Button>Add new event</Button>
 						<Button>Edit event</Button>
 						<Button>Delete event</Button>
@@ -654,9 +664,11 @@ class EventDBScreen extends Component{
 				</Col>
 			</Row>
 			<Row>
-				<Col sm={10}><select size = {5}>{arenaEventList}</select></Col>
+				<Col sm={10}>
+					<select size = {5} value = {st.selectedArenaEventIndex} onChange = {this.getSelectedArenaEvent}>{arenaEventList}</select>
+				</Col>
 				<Col sm={2}>
-					<ButtonGroup vertical bsSize="sm">
+					<ButtonGroup vertical bsSize = "sm">
 						<Button>Add new arena event</Button>
 						<Button>Edit arena event</Button>
 						<Button>Delete arena event</Button>
