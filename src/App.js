@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import {Grid, Row, Col, Collapse, Form, FormGroup, ControlLabel, FormControl,
-		DropdownButton, MenuItem, Modal, InputGroup, Button, ButtonGroup} from 'react-bootstrap';
+		DropdownButton, MenuItem, Modal, InputGroup, Button, ButtonGroup, ListGroup, ListGroupItem} from 'react-bootstrap';
 import ArenaEvent, {DefaultEvent} from './defaultEvent';
 import SpecialArenaEvent, {DefaultSpecialEvent} from './defaultSpecialEvent';
 
@@ -575,11 +575,20 @@ class EventDBScreen extends Component{
 			eventSearchTerm: "",
 			
 			selectedArenaEventIndex: -1,
-			selectedArenaEvent: new SpecialArenaEvent("")
+			selectedArenaEvent: new SpecialArenaEvent(""),
+			arenaEventSearchTerm: "",
+			showMatches: false
 		}
+		this.getArenaEvent = this.getArenaEvent.bind(this);
 		this.getSelectedEvent = this.getSelectedEvent.bind(this);
-		this.getSelectedArenaEvent = this.getSelectedArenaEvent.bind(this);
 		this.updateEventFilter = this.updateEventFilter.bind(this);
+		this.updateArenaEventFilter = this.updateArenaEventFilter.bind(this);
+	}
+	
+	getArenaEvent(e){
+		var x = parseInt((e.target.tagName === "BUTTON" ? e.target.id : e.target.parentElement.id).substr(10), 10);
+		this.setState({selectedArenaEvent: this.props.specialArenaEvent[x],
+						selectedArenaEventIndex: x});
 	}
 	
 	getSelectedEvent(e){
@@ -587,15 +596,24 @@ class EventDBScreen extends Component{
 						selectedEventIndex: e.target.value});
 	}
 	
-	getSelectedArenaEvent(e){
-		this.setState({selectedArenaEvent: this.props.specialArenaEvent[e.target.value],
-						selectedArenaEventIndex: e.target.value});
-	}
-	
 	updateEventFilter(e){
 		this.setState({eventSearchTerm: e.target.value});
 		if (this.state.selectedEvent.eventText.toLowerCase().indexOf(e.target.value) === -1){
 			this.setState({selectedEventIndex: -1});
+		}
+	}
+	
+	updateArenaEventFilter(e){
+		this.setState({arenaEventSearchTerm: e.target.value});
+		var st = this.state;
+		if (st.selectedArenaEvent.leadText.toLowerCase().indexOf(st.arenaEventSearchTerm) === -1 &&
+				st.selectedArenaEvent.nonFatalEvent.eventText.toLowerCase().indexOf(st.arenaEventSearchTerm) === -1 &&
+				st.selectedArenaEvent.fatalEvent[0].eventText.toLowerCase().indexOf(st.arenaEventSearchTerm) === -1 &&
+				st.selectedArenaEvent.fatalEvent[1].eventText.toLowerCase().indexOf(st.arenaEventSearchTerm) === -1 &&
+				st.selectedArenaEvent.fatalEvent[2].eventText.toLowerCase().indexOf(st.arenaEventSearchTerm) === -1 &&
+				st.selectedArenaEvent.fatalEvent[3].eventText.toLowerCase().indexOf(st.arenaEventSearchTerm) === -1 &&
+				st.selectedArenaEvent.fatalEvent[4].eventText.toLowerCase().indexOf(st.arenaEventSearchTerm) === -1){
+			this.setState({selectedArenaEventIndex: -1});
 		}
 	}
 	
@@ -610,9 +628,24 @@ class EventDBScreen extends Component{
 		if (eventList.length > 0) eventList.unshift(<option key = {-1} value = {-1} disabled hidden></option>);
 		
 		for (i = 0; i < pr.specialArenaEvent.length; i++){
-			arenaEventList.push(<option key = {i} value = {i}>{pr.specialArenaEvent[i].leadText}</option>);
+			if(pr.specialArenaEvent[i].leadText.toLowerCase().indexOf(st.arenaEventSearchTerm) > -1||
+				pr.specialArenaEvent[i].nonFatalEvent.eventText.toLowerCase().indexOf(st.arenaEventSearchTerm) > -1||
+				pr.specialArenaEvent[i].fatalEvent[0].eventText.toLowerCase().indexOf(st.arenaEventSearchTerm) > -1||
+				pr.specialArenaEvent[i].fatalEvent[1].eventText.toLowerCase().indexOf(st.arenaEventSearchTerm) > -1||
+				pr.specialArenaEvent[i].fatalEvent[2].eventText.toLowerCase().indexOf(st.arenaEventSearchTerm) > -1||
+				pr.specialArenaEvent[i].fatalEvent[3].eventText.toLowerCase().indexOf(st.arenaEventSearchTerm) > -1||
+				pr.specialArenaEvent[i].fatalEvent[4].eventText.toLowerCase().indexOf(st.arenaEventSearchTerm) > -1){
+				arenaEventList.push(<ListGroupItem key = {i} id = {"arenaEvent" + i} header = {pr.specialArenaEvent[i].leadText}
+										active = {st.selectedArenaEventIndex === i} onClick = {this.getArenaEvent}>
+										{pr.specialArenaEvent[i].nonFatalEvent.eventText}<br/>
+										{pr.specialArenaEvent[i].fatalEvent[0].eventText}<br/>
+										{pr.specialArenaEvent[i].fatalEvent[1].eventText}<br/>
+										{pr.specialArenaEvent[i].fatalEvent[2].eventText}<br/>
+										{pr.specialArenaEvent[i].fatalEvent[3].eventText}<br/>
+										{pr.specialArenaEvent[i].fatalEvent[4].eventText}
+										</ListGroupItem>)
+			}
 		}
-		if (arenaEventList.length > 0) arenaEventList.unshift(<option key = {-1} value = {-1} disabled hidden></option>);
 		
 		if (st.selectedEventIndex > -1){
 			var scope = [];
@@ -641,7 +674,7 @@ class EventDBScreen extends Component{
 			}
 			
 			var eventDesc = (<div>
-			{st.selectedEvent.eventText}<br/>
+			<h4>{st.selectedEvent.eventText}</h4>
 			Event scope: {scopeList}<br/>
 			Killer: {killers.length > 0 ? killerList : "None"}<br/>
 			Killed: {victims.length > 0 ? killedList : "None"}
@@ -649,7 +682,6 @@ class EventDBScreen extends Component{
 		}
 		
 		if (st.selectedArenaEventIndex > -1){
-			console.log(st.selectedArenaEvent);
 			var fatalEventList = [];
 			for (i = 0; i < 5; i++){
 				killers = [];
@@ -666,7 +698,7 @@ class EventDBScreen extends Component{
 				for (j = 0; j < victims.length; j++){
 					killedList += (j > 0 ? ", " : "") + "Player" + (victims[j] + 1);
 				}
-				fatalEventList.push(<div>
+				fatalEventList.push(<div key = {i}>
 					{st.selectedArenaEvent.fatalEvent[i].eventText}<br/>
 					Killer: {killers.length > 0 ? killerList : "None"}<br/>
 					Killed: {victims.length > 0 ? killedList : "None"}
@@ -685,28 +717,31 @@ class EventDBScreen extends Component{
 			<Row>
 				<Col sm = {10}>
 					<FormControl type = "text" placeholder = "Search event" value = {st.eventSearchTerm} onChange = {this.updateEventFilter}/>
-					<select size = {10} value = {st.selectedEventIndex} onChange = {this.getSelectedEvent}>{eventList}</select>
+					<FormControl componentClass = "select" size = {6} value = {st.selectedEventIndex} onChange = {this.getSelectedEvent}>{eventList}</FormControl>
 					{st.selectedEventIndex === -1 ? (<div>Click on an event in the list to see its description<br/><br/><br/><br/></div>) : eventDesc}
 				</Col>
 				<Col sm = {2}>
 					<ButtonGroup vertical bsSize = "sm">
 						<Button>Add new event</Button>
-						<Button>Edit event</Button>
-						<Button>Delete event</Button>
+						<Button disabled = {st.selectedEventIndex === -1}>Edit event</Button>
+						<Button disabled = {st.selectedEventIndex === -1}>Delete event</Button>
 						<Button>Restore defaults</Button>
 					</ButtonGroup>
 				</Col>
 			</Row>
 			<Row>
-				<Col sm = {10}>
-					<select size = {5} value = {st.selectedArenaEventIndex} onChange = {this.getSelectedArenaEvent}>{arenaEventList}</select>
+				<Col sm = {5}>
+					<FormControl type = "text" placeholder = "Search arena event" value = {st.arenaEventSearchTerm} onChange = {this.updateArenaEventFilter}/>
+					<ListGroup id = "arenaEventSearchResult">{arenaEventList}</ListGroup>
+				</Col>
+				<Col sm = {5}>
 					{st.selectedArenaEventIndex === -1 ? null : arenaEventDesc}
 				</Col>
 				<Col sm = {2}>
 					<ButtonGroup vertical bsSize = "sm">
 						<Button>Add new arena event</Button>
-						<Button>Edit arena event</Button>
-						<Button>Delete arena event</Button>
+						<Button disabled = {st.selectedArenaEventIndex === -1}>Edit arena event</Button>
+						<Button disabled = {st.selectedArenaEventIndex === -1}>Delete arena event</Button>
 						<Button>Restore defaults</Button>
 					</ButtonGroup>
 				</Col>
