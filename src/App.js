@@ -626,9 +626,8 @@ class EventDBScreen extends Component{
 					scopeList += ", " + scope[i]
 				}
 			}
-			
+			var killers = [], victims = [], killerList = "", killedList = "";		
 			if (st.selectedEvent.deaths() > 0){
-				var killers = [], victims = [], killerList = "", killedList = "";
 				for (i = 0; i < st.selectedEvent.playerCount; i++){
 					if (st.selectedEvent.p[i].isKiller) killers.push(i);
 					if (st.selectedEvent.p[i].deathType > 0) victims.push(i);
