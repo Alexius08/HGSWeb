@@ -5,9 +5,9 @@ function SpecialArenaEvent(leadText){
 	this.nonFatalEvent = new ArenaEvent("(Player1) survives.", 0, 1, [{isKiller: false, deathType: 0}]);
 	this.fatalEvent = [new ArenaEvent("(Player1) dies.", 0, 1, [{isKiller: false, deathType: 3}]),
 	new ArenaEvent("(Player1) dies.", 0, 1, [{isKiller: false, deathType: 3}]),
-	new ArenaEvent("(Player1) kills (Player2).", 0, 2, [{isKiller: true, deathType: 0},{isKiller: false, deathType: 1}]),
-	new ArenaEvent("(Player1) kills (Player2).", 0, 2, [{isKiller: true, deathType: 0},{isKiller: false, deathType: 1}]),
-	new ArenaEvent("(Player1) and (Player2) die together.", 0, 2, [{isKiller: false, deathType: 3},{isKiller: false, deathType: 3}]),
+	new ArenaEvent("(Player1) kills (Player2).", 0, 2, [{isKiller: true, deathType: 0}, {isKiller: false, deathType: 1}]),
+	new ArenaEvent("(Player1) kills (Player2).", 0, 2, [{isKiller: true, deathType: 0}, {isKiller: false, deathType: 1}]),
+	new ArenaEvent("(Player1) and (Player2) die together.", 0, 2, [{isKiller: false, deathType: 3}, {isKiller: false, deathType: 3}])
 	]
 }
 

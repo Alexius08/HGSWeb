@@ -110,7 +110,7 @@ for (var i = 0; i < DefaultText.length; i++){
 	else DefaultEvent[i].playerCount = 2;
 	
 	//set defaults for kill status and death type
-	if(DefaultEvent[i].playerCount>DefaultEvent[i].p.length){
+	if(DefaultEvent[i].playerCount > DefaultEvent[i].p.length){
 		for (var j = 1; j < DefaultEvent[i].playerCount; j++){
 			DefaultEvent[i].p.push({isKiller: false, deathType: 0});
 		}

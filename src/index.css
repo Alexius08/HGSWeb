@@ -151,3 +151,9 @@ body{
 .imgInputHolder input{
 	width: 100px;
 }
+
+#arenaEventSearchResult{
+	height: 250px;
+	overflow-y: scroll;
+	background-color: white;
+}

@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import {Grid, Row, Col, Collapse, Form, FormGroup, ControlLabel, FormControl,
-		DropdownButton, MenuItem, Modal, InputGroup, Button, ButtonGroup, ListGroup, ListGroupItem} from 'react-bootstrap';
+		DropdownButton, MenuItem, Modal, InputGroup, Button, ButtonGroup, ListGroup,
+		ListGroupItem, Checkbox} from 'react-bootstrap';
 import ArenaEvent, {DefaultEvent} from './defaultEvent';
 import SpecialArenaEvent, {DefaultSpecialEvent} from './defaultSpecialEvent';
 
@@ -570,19 +571,42 @@ class EventDBScreen extends Component{
 	constructor(props){
 		super(props)
 		this.state = {
-			selectedEvent: new ArenaEvent("", 0, 0, []),
+			selectedEvent: new ArenaEvent("", 0, 1, [{isKiller: false, deathType: 0}]),
 			selectedEventIndex: -1,
 			eventSearchTerm: "",
 			
 			selectedArenaEventIndex: -1,
 			selectedArenaEvent: new SpecialArenaEvent(""),
 			arenaEventSearchTerm: "",
-			showMatches: false
+
+			showEventEditor: false,
+			eventEditMode: "Add",
+			showArenaEventEditor: false
 		}
 		this.getArenaEvent = this.getArenaEvent.bind(this);
 		this.getSelectedEvent = this.getSelectedEvent.bind(this);
 		this.updateEventFilter = this.updateEventFilter.bind(this);
 		this.updateArenaEventFilter = this.updateArenaEventFilter.bind(this);
+		this.showEventEditor = this.showEventEditor.bind(this);
+		this.hideEventEditor = this.hideEventEditor.bind(this);
+		this.addEvent = this.addEvent.bind(this);
+		this.editEvent = this.editEvent.bind(this);
+	}
+	
+	showEventEditor(){
+		this.setState({showEventEditor: true});
+	}
+	
+	hideEventEditor(){
+		this.setState({showEventEditor: false});
+	}
+	
+	addEvent(){
+		this.setState({eventEditMode: "Add", showEventEditor: true});
+	}
+	
+	editEvent(){
+		this.setState({eventEditMode: "Edit", showEventEditor: true});
 	}
 	
 	getArenaEvent(e){
@@ -722,8 +746,8 @@ class EventDBScreen extends Component{
 				</Col>
 				<Col sm = {2}>
 					<ButtonGroup vertical bsSize = "sm">
-						<Button>Add new event</Button>
-						<Button disabled = {st.selectedEventIndex === -1}>Edit event</Button>
+						<Button onClick = {this.addEvent}>Add new event</Button>
+						<Button disabled = {st.selectedEventIndex === -1} onClick = {this.editEvent}>Edit event</Button>
 						<Button disabled = {st.selectedEventIndex === -1}>Delete event</Button>
 						<Button>Restore defaults</Button>
 					</ButtonGroup>
@@ -746,7 +770,132 @@ class EventDBScreen extends Component{
 					</ButtonGroup>
 				</Col>
 			</Row>
+			<EventEditor show = {st.showEventEditor} hide = {this.hideEventEditor}
+			mode = {st.eventEditMode} selectedEvent = {st.eventEditMode === "Edit" && st.selectedEvent}/>
 		</div>);
+	}
+}
+
+class EventEditor extends Component{
+	constructor(props){
+		super(props);
+		this.state = {
+			currentEvent: new ArenaEvent("", 0, 1, [{isKiller: false, deathType: 0}])
+		}
+		this.updateEventText = this.updateEventText.bind(this);
+		this.initializeValues = this.initializeValues.bind(this);
+		this.toggleScope = this.toggleScope.bind(this);
+		this.toggleSharedKill = this.toggleSharedKill.bind(this);
+		this.toggleKiller = this.toggleKiller.bind(this);
+		this.toggleVictim = this.toggleVictim.bind(this);
+		this.setDeathType = this.setDeathType.bind(this);
+		this.setTribCount = this.setTribCount.bind(this);
+	}
+	initializeValues(){
+		this.setState({currentEvent: (this.props.mode === "Edit" ? Object.assign(this.state.currentEvent, this.props.selectedEvent) : new ArenaEvent("", 0, 1, [{isKiller: false, deathType: 0}]))}); //direct assignment will overwrite the original
+	}
+	updateEventText(e){
+		this.setState({currentEvent: Object.assign(this.state.currentEvent, {eventText: e.target.value})});
+	}
+	toggleScope(e){
+		var val = this.state.currentEvent.scope + (parseInt(e.target.id.substr(5), 10) * (e.target.checked ? 1 : -1));
+		this.setState({currentEvent: Object.assign(this.state.currentEvent, {scope: val})});
+	}
+	toggleSharedKill(e){
+		this.setState({currentEvent: Object.assign(this.state.currentEvent, {isSharedKill: e.target.checked})});
+	}
+	toggleKiller(e){
+		var pl = [];
+		for (var i = 0; i < this.state.currentEvent.playerCount; i++){
+			pl.push(this.state.currentEvent.p[i]);
+		}
+		pl[e.target.id.substr(8)].isKiller = e.target.checked;
+		this.setState({currentEvent: Object.assign(this.state.currentEvent, {p: pl})});
+	}
+	toggleVictim(e){
+		var pl = [];
+		for (var i = 0; i < this.state.currentEvent.playerCount; i++){
+			pl.push(this.state.currentEvent.p[i]);
+		}
+		pl[e.target.id.substr(8)].deathType = e.target.checked ? 1 : 0;
+		this.setState({currentEvent: Object.assign(this.state.currentEvent, {p: pl})});
+	}
+	setDeathType(e){
+		var pl = [];
+		for (var i = 0; i < this.state.currentEvent.playerCount; i++){
+			pl.push(this.state.currentEvent.p[i]);
+		}
+		pl[e.target.id.substr(9)].deathType = e.target.value;
+		this.setState({currentEvent: Object.assign(this.state.currentEvent, {p: pl})});
+	}
+	setTribCount(e){
+		var pl = [];
+		for (var i = 0; i < e.target.value; i++){
+			pl.push(i < this.state.currentEvent.playerCount ? this.state.currentEvent.p[i] : {isKiller: false, deathType: 0});
+		}
+		this.setState({currentEvent: Object.assign(this.state.currentEvent, {playerCount: e.target.value, p: pl})});
+	}
+	render(){
+		var st = this.state, pr = this.props, playerStatus = [];
+		for (var i = 0; i < st.currentEvent.playerCount; i++){
+			playerStatus.push(<Row key = {i}>
+			<Col sm = {3}><ControlLabel>{"Player " + (i + 1)}</ControlLabel></Col>
+			<Col sm = {3}><Checkbox id = {"isKiller" + i} checked = {st.currentEvent.p[i].isKiller} onChange = {this.toggleKiller}/></Col>
+			<Col sm = {3}><Checkbox id = {"isKilled" + i} checked = {st.currentEvent.p[i].deathType > 0} onChange = {this.toggleVictim}/></Col>
+			<Col sm = {3}>
+				<FormControl id = {"deathType" + i} componentClass = "select" value = {st.currentEvent.p[i].deathType} onChange = {this.setDeathType}>
+					<option hidden value = {0}/>
+					<option value = {1}>Combat death</option>
+					<option value = {2}>Suicide</option>
+					<option value = {3}>Other</option>
+				</FormControl>
+			</Col>
+			</Row>);
+		}
+		return(
+		<Modal backdrop = "static" show = {pr.show} onHide = {pr.hide} onEnter = {this.initializeValues}>
+			<Modal.Header closeButton>
+				<Modal.Title>{pr.mode + " event"}</Modal.Title>
+			</Modal.Header>
+			<Modal.Body>
+				<InputGroup>
+					<InputGroup.Addon>Event text</InputGroup.Addon>
+					<FormControl type = "text" value = {st.currentEvent.eventText} onChange = {this.updateEventText}/>
+				</InputGroup>
+				<InputGroup>
+					<InputGroup.Addon>Number of tributes involved</InputGroup.Addon>
+					<FormControl componentClass = "input" type = "number" min = {1} max = {6} value = {st.currentEvent.playerCount} onChange = {this.setTribCount}/>
+				</InputGroup>
+				<FormGroup>
+					<Col componentClass = {ControlLabel} sm = {3}>Event scope</Col>
+					<Col sm = {2}>
+						<Checkbox inline id = "scope1" checked = {st.currentEvent.isBloodbathEvent()} onChange = {this.toggleScope}>Bloodbath</Checkbox>
+					</Col>
+					<Col sm = {2}>
+						<Checkbox inline id = "scope2" checked = {st.currentEvent.isDayEvent()} onChange = {this.toggleScope}>Day</Checkbox>
+					</Col>
+					<Col sm = {2}>
+						<Checkbox inline id = "scope4" checked = {st.currentEvent.isNightEvent()} onChange = {this.toggleScope}>Night</Checkbox>
+					</Col>
+					<Col sm = {2}>
+						<Checkbox inline id = "scope8" checked = {st.currentEvent.isFeastEvent()} onChange = {this.toggleScope}>Feast</Checkbox>
+					</Col>
+				</FormGroup>
+
+				<Checkbox inline checked = {st.currentEvent.isSharedKill} onChange = {this.toggleSharedKill}>Is kill shared?</Checkbox>
+					<Row>
+						<Col sm = {3}/>
+						<Col sm = {3}>Is killer?</Col>
+						<Col sm = {3}>Is killed?</Col>
+						<Col sm = {3}>Death type</Col>
+					</Row>
+					{playerStatus}
+			</Modal.Body>
+			<Modal.Footer>
+				<Button bsStyle = "default">Submit</Button>
+				<Button bsStyle = "danger" onClick = {pr.hide}>Cancel</Button>
+			</Modal.Footer>
+		</Modal>)
 	}
 }
 
