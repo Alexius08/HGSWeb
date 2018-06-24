@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import {Grid, Row, Col, Collapse, Form, FormGroup, ControlLabel, FormControl,
 		DropdownButton, MenuItem, Modal, InputGroup, Button, ButtonGroup, ListGroup,
-		ListGroupItem, Checkbox} from 'react-bootstrap';
+		ListGroupItem, Checkbox, Tabs, Tab} from 'react-bootstrap';
 import ArenaEvent, {DefaultEvent} from './defaultEvent';
 import SpecialArenaEvent, {DefaultSpecialEvent} from './defaultSpecialEvent';
 
@@ -581,7 +581,8 @@ class EventDBScreen extends Component{
 
 			showEventEditor: false,
 			eventEditMode: "Add",
-			showArenaEventEditor: false
+			showArenaEventEditor: false,
+			arenaEventEditMode: "Add"
 		}
 		this.getArenaEvent = this.getArenaEvent.bind(this);
 		this.getSelectedEvent = this.getSelectedEvent.bind(this);
@@ -591,6 +592,10 @@ class EventDBScreen extends Component{
 		this.hideEventEditor = this.hideEventEditor.bind(this);
 		this.addEvent = this.addEvent.bind(this);
 		this.editEvent = this.editEvent.bind(this);
+		this.addArenaEvent = this.addArenaEvent.bind(this);
+		this.editArenaEvent = this.editArenaEvent.bind(this);
+		this.showArenaEventEditor = this.showArenaEventEditor.bind(this);
+		this.hideArenaEventEditor = this.hideArenaEventEditor.bind(this);
 	}
 	
 	showEventEditor(){
@@ -607,6 +612,14 @@ class EventDBScreen extends Component{
 	
 	editEvent(){
 		this.setState({eventEditMode: "Edit", showEventEditor: true});
+	}
+	
+	addArenaEvent(){
+		this.setState({arenaEventEditMode: "Add", showArenaEventEditor: true});
+	}
+	
+	editArenaEvent(){
+		this.setState({arenaEventEditMode: "Edit", showArenaEventEditor: true});
 	}
 	
 	getArenaEvent(e){
@@ -639,6 +652,14 @@ class EventDBScreen extends Component{
 				st.selectedArenaEvent.fatalEvent[4].eventText.toLowerCase().indexOf(st.arenaEventSearchTerm) === -1){
 			this.setState({selectedArenaEventIndex: -1});
 		}
+	}
+	
+	showArenaEventEditor(){
+		this.setState({showArenaEventEditor: true});
+	}
+	
+	hideArenaEventEditor(){
+		this.setState({showArenaEventEditor: false});
 	}
 	
 	render(){
@@ -763,15 +784,17 @@ class EventDBScreen extends Component{
 				</Col>
 				<Col sm = {2}>
 					<ButtonGroup vertical bsSize = "sm">
-						<Button>Add new arena event</Button>
-						<Button disabled = {st.selectedArenaEventIndex === -1}>Edit arena event</Button>
+						<Button onClick = {this.addArenaEvent}>Add new arena event</Button>
+						<Button disabled = {st.selectedArenaEventIndex === -1} onClick = {this.editArenaEvent}>Edit arena event</Button>
 						<Button disabled = {st.selectedArenaEventIndex === -1}>Delete arena event</Button>
 						<Button>Restore defaults</Button>
 					</ButtonGroup>
 				</Col>
 			</Row>
 			<EventEditor show = {st.showEventEditor} hide = {this.hideEventEditor}
-			mode = {st.eventEditMode} selectedEvent = {st.eventEditMode === "Edit" && st.selectedEvent}/>
+			mode = {st.eventEditMode} selectedEvent = {st.arenaEventEditMode === "Edit" && st.selectedEvent}/>
+			<ArenaEventEditor show = {st.showArenaEventEditor} hide = {this.hideArenaEventEditor}
+			mode = {st.arenaEventEditMode} selectedArenaEvent = {st.arenaEventEditMode === "Edit" && st.selectedArenaEvent}/>
 		</div>);
 	}
 }
@@ -896,6 +919,154 @@ class EventEditor extends Component{
 				<Button bsStyle = "danger" onClick = {pr.hide}>Cancel</Button>
 			</Modal.Footer>
 		</Modal>)
+	}
+}
+
+class ArenaEventEditor extends Component{
+	constructor(props){
+		super(props);	
+		
+		this.state = {activeTab: 0,
+						currentArenaEvent: new SpecialArenaEvent("")};
+		
+		this.switchToTab = this.switchToTab.bind(this);
+		this.initializeValues = this.initializeValues.bind(this);
+		this.setNonFatalEventText = this.setNonFatalEventText.bind(this);
+		this.setFatalEventText = this.setFatalEventText.bind(this);
+		
+		this.toggleKiller = this.toggleKiller.bind(this);
+		this.toggleVictim = this.toggleVictim.bind(this);
+		this.setDeathType = this.setDeathType.bind(this);
+		this.setTribCount = this.setTribCount.bind(this);
+		this.setLeadText = this.setLeadText.bind(this);
+	}
+	
+	initializeValues(){
+		this.setState({activeTab: 0,
+						currentArenaEvent: (this.props.mode === "Edit" ? Object.assign(this.state.currentArenaEvent, this.props.selectedArenaEvent) : new SpecialArenaEvent(""))}); //direct assignment will overwrite the original
+	}
+	
+	switchToTab(key){
+		this.setState({activeTab: key});
+	}
+	
+	setNonFatalEventText(e){
+		var details = Object.assign({}, this.state.currentArenaEvent.nonFatalEvent); //direct assignment will modify original
+		details.eventText = e.target.value;
+		this.setState({currentArenaEvent: Object.assign(this.state.currentArenaEvent, {nonFatalEvent: details})});
+	}
+	
+	setFatalEventText(e){
+		var fatalEvents = [];
+		for (var i = 0; i < 5; i++){
+			fatalEvents.push(this.state.currentArenaEvent.fatalEvent[i]);
+		}
+		fatalEvents[e.target.id.substr(14)].eventText = e.target.value;
+		this.setState({currentArenaEvent: Object.assign(this.state.currentArenaEvent, {fatalEvent: fatalEvents})});
+	}
+
+	toggleKiller(e){
+		var fatalEvents = [];
+		for (var i = 0; i < 5; i++){
+			fatalEvents.push(this.state.currentArenaEvent.fatalEvent[i]);
+		}
+		var rawId = e.target.id.substr(8);
+		fatalEvents[(rawId - (rawId % 6)) / 6].p[rawId % 6].isKiller = e.target.checked;
+		this.setState({currentArenaEvent: Object.assign(this.state.currentArenaEvent, {fatalEvent: fatalEvents})});
+	}
+	
+	toggleVictim(e){
+		var fatalEvents = [];
+		for (var i = 0; i < 5; i++){
+			fatalEvents.push(this.state.currentArenaEvent.fatalEvent[i]);
+		}
+		var rawId = e.target.id.substr(8);
+		fatalEvents[(rawId - (rawId % 6)) / 6].p[rawId % 6].deathType = e.target.checked ? 1 : 0;
+		this.setState({currentArenaEvent: Object.assign(this.state.currentArenaEvent, {fatalEvent: fatalEvents})});
+	}
+	
+	setDeathType(e){
+		var fatalEvents = [];
+		for (var i = 0; i < 5; i++){
+			fatalEvents.push(this.state.currentArenaEvent.fatalEvent[i]);
+		}
+		var rawId = e.target.id.substr(9);
+		fatalEvents[(rawId - (rawId % 6)) / 6].p[rawId % 6].deathType = e.target.value;
+		this.setState({currentArenaEvent: Object.assign(this.state.currentArenaEvent, {fatalEvent: fatalEvents})});
+	}
+	
+	setTribCount(e){
+		var fatalEvents = [], pl = [];
+		for (var i = 0; i < 5; i++){
+			fatalEvents.push(this.state.currentArenaEvent.fatalEvent[i]);
+		}
+		var num = e.target.id.substr(9);
+		for (i = 0; i < e.target.value; i++){
+			pl.push(i < fatalEvents[num].playerCount ? fatalEvents[num].p[i] : {isKiller: false, deathType: 0});
+		}
+		fatalEvents[num].playerCount = e.target.value;		
+		fatalEvents[num].p = pl
+		this.setState({currentArenaEvent: Object.assign(this.state.currentArenaEvent, {fatalEvent: fatalEvents})});
+	}
+	
+	setLeadText(e){
+		this.setState({currentArenaEvent: Object.assign(this.state.currentArenaEvent, {leadText: e.target.value})});
+	}
+	
+	render(){
+		var pr = this.props, st = this.state, fatalEventTabs = [];
+		for (var i = 0; i < 5; i++){
+			var playerStatus = [];
+			for (var j = 0; j < st.currentArenaEvent.fatalEvent[i].playerCount; j++){
+				playerStatus.push(<Row key = {j}>
+				<Col sm = {3}><ControlLabel>{"Player " + (j + 1)}</ControlLabel></Col>
+				<Col sm = {3}><Checkbox id = {"isKiller" + (i * 6 + j)} checked = {st.currentArenaEvent.fatalEvent[i].p[j].isKiller} onChange = {this.toggleKiller}/></Col>
+				<Col sm = {3}><Checkbox id = {"isKilled" + (i * 6 + j)} checked = {st.currentArenaEvent.fatalEvent[i].p[j].deathType > 0} onChange = {this.toggleVictim}/></Col>
+				<Col sm = {3}>
+					<FormControl id = {"deathType" + (i * 6 + j)} componentClass = "select" value = {st.currentArenaEvent.fatalEvent[i].p[j].deathType} onChange = {this.setDeathType}>
+						<option hidden value = {0}/>
+						<option value = {1}>Combat death</option>
+						<option value = {2}>Suicide</option>
+						<option value = {3}>Other</option>
+					</FormControl>
+				</Col>
+				</Row>);
+			}
+			fatalEventTabs.push(<Tab key = {i} eventKey = {i + 1} title = {"Fatal event " + (i + 1)}>
+				<FormControl id = {"fatalEventText" + i} type = "text" value = {st.currentArenaEvent.fatalEvent[i].eventText} onChange = {this.setFatalEventText}/>
+				<InputGroup>
+					<InputGroup.Addon>Number of tributes involved</InputGroup.Addon>
+					<FormControl id = {"tribCount" + i} componentClass = "input" type = "number" min = {1} max = {6} value = {st.currentArenaEvent.fatalEvent[i].playerCount} onChange = {this.setTribCount}/>
+				</InputGroup>				
+				<Row>
+					<Col sm = {3}/>
+					<Col sm = {3}>Is killer?</Col>
+					<Col sm = {3}>Is killed?</Col>
+					<Col sm = {3}>Death type</Col>
+				</Row>
+				{playerStatus}
+			</Tab>);
+		}
+		return(<Modal bsSize = "lg" backdrop = "static" show = {pr.show} onHide = {pr.hide} onEnter = {this.initializeValues}>
+			<Modal.Header closeButton>
+				<Modal.Title>{pr.mode + " arena event"}</Modal.Title>
+			</Modal.Header>
+			<Modal.Body>
+			<FormControl type = "text" value = {st.currentArenaEvent.leadText} onChange = {this.setLeadText} />
+			<Tabs activeKey = {st.activeTab} onSelect = {this.switchToTab} id = "arenaEventOutcomes">
+				<Tab eventKey = {0} title = "Non-fatal event">
+					<FormControl type = "text" value = {st.currentArenaEvent.nonFatalEvent.eventText} onChange = {this.setNonFatalEventText}/>
+					Number of tributes involved: 1
+				</Tab>
+				{fatalEventTabs}
+			</Tabs>
+			</Modal.Body>
+			<Modal.Footer>
+				<Button bsStyle = "default">Submit</Button>
+				<Button bsStyle = "danger" onClick = {pr.hide}>Cancel</Button>
+			</Modal.Footer>
+		</Modal>
+		)
 	}
 }
 
