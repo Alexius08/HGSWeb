@@ -156,6 +156,10 @@ function Player(id, fullname, nickname, gender, imageUrl, deathImage){
 	this.deaths = function(){return this.combatDeaths + this.suicides + this.otherDeaths;}
 }
 
+function isValidNumInput(numInput){
+	return (isFinite(numInput.value) && numInput.value % 1 === 0 && numInput.value >= numInput.min && numInput.value <= numInput.max);
+}
+
 class ReapingScreen extends Component{
 	constructor(props){
 		super(props);
@@ -185,7 +189,7 @@ class ReapingScreen extends Component{
 		this.setState({"curTributes": newArr});
 	}
 	updateState(e){
-		if (isFinite(e.target.value) && e.target.value % 1 == 0){
+		if (isValidNumInput(e.target)){
 			var newVal = e.target.value, st = this.state;
 			var old = st.curTributes.slice(), newCount = 0;
 			if (e.target.id === "tributesPerDistrict"){
@@ -864,7 +868,7 @@ class EventEditor extends Component{
 		this.setState({currentEvent: Object.assign(this.state.currentEvent, {p: pl})});
 	}
 	setTribCount(e){
-		if (isFinite(e.target.value) && e.target.value % 1 == 0){
+		if (isValidNumInput(e.target)){
 			var pl = [];
 			for (var i = 0; i < e.target.value; i++){
 				pl.push(i < this.state.currentEvent.playerCount ? this.state.currentEvent.p[i] : {isKiller: false, deathType: 0});
@@ -1010,7 +1014,7 @@ class ArenaEventEditor extends Component{
 	}
 	
 	setTribCount(e){
-		if (isFinite(e.target.value) && e.target.value % 1 == 0){
+		if (isValidNumInput(e.target)){
 			var fatalEvents = [], pl = [];
 			for (var i = 0; i < 5; i++){
 				fatalEvents.push(this.state.currentArenaEvent.fatalEvent[i]);
