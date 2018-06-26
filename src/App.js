@@ -857,6 +857,11 @@ class EventEditor extends Component{
 			pl.push(this.state.currentEvent.p[i]);
 		}
 		pl[e.target.id.substr(8)].deathType = e.target.checked ? 1 : 0;
+		if(pl.filter(function countKilled(p){return p.deathType > 0}).length === 0){
+			for (i = 0; i < this.state.currentEvent.playerCount; i++){
+				pl[i].isKiller = false;
+			}
+		}
 		this.setState({currentEvent: Object.assign(this.state.currentEvent, {p: pl})});
 	}
 	setDeathType(e){
@@ -881,7 +886,7 @@ class EventEditor extends Component{
 		for (var i = 0; i < st.currentEvent.playerCount; i++){
 			playerStatus.push(<Row key = {i}>
 			<Col sm = {3}><ControlLabel>{"Player " + (i + 1)}</ControlLabel></Col>
-			<Col sm = {3}><Checkbox id = {"isKiller" + i} checked = {st.currentEvent.p[i].isKiller} onChange = {this.toggleKiller}/></Col>
+			<Col sm = {3}><Checkbox id = {"isKiller" + i} checked = {st.currentEvent.p[i].isKiller} onChange = {this.toggleKiller} disabled = {this.state.currentEvent.deaths() === 0}/></Col>
 			<Col sm = {3}><Checkbox id = {"isKilled" + i} checked = {st.currentEvent.p[i].deathType > 0} onChange = {this.toggleVictim}/></Col>
 			<Col sm = {3}>
 				<FormControl id = {"deathType" + i} componentClass = "select" value = {st.currentEvent.p[i].deathType} onChange = {this.setDeathType}>
@@ -923,7 +928,7 @@ class EventEditor extends Component{
 					</Col>
 				</FormGroup>
 
-				<Checkbox inline checked = {st.currentEvent.isSharedKill} onChange = {this.toggleSharedKill}>Is kill shared?</Checkbox>
+				<Checkbox inline checked = {st.currentEvent.isSharedKill} onChange = {this.toggleSharedKill} disabled = {st.currentEvent.p.filter(function countKillers(pl){return pl.isKiller === true}).length < 2}>Is kill shared?</Checkbox>
 					<Row>
 						<Col sm = {3}/>
 						<Col sm = {3}>Is killer?</Col>
@@ -998,8 +1003,13 @@ class ArenaEventEditor extends Component{
 		for (var i = 0; i < 5; i++){
 			fatalEvents.push(this.state.currentArenaEvent.fatalEvent[i]);
 		}
-		var rawId = e.target.id.substr(8);
-		fatalEvents[(rawId - (rawId % 6)) / 6].p[rawId % 6].deathType = e.target.checked ? 1 : 0;
+		var rawId = e.target.id.substr(8), fatalEvtNo = ((rawId - (rawId % 6)) / 6);
+		fatalEvents[fatalEvtNo].p[rawId % 6].deathType = e.target.checked ? 1 : 0;
+		if(fatalEvents[fatalEvtNo].deaths() === 0){
+			for (i = 0; i < fatalEvents[fatalEvtNo].playerCount; i++){
+				fatalEvents[fatalEvtNo].p[i].isKiller = false;
+			}
+		}
 		this.setState({currentArenaEvent: Object.assign(this.state.currentArenaEvent, {fatalEvent: fatalEvents})});
 	}
 	
@@ -1040,7 +1050,7 @@ class ArenaEventEditor extends Component{
 			for (var j = 0; j < st.currentArenaEvent.fatalEvent[i].playerCount; j++){
 				playerStatus.push(<Row key = {j}>
 				<Col sm = {3}><ControlLabel>{"Player " + (j + 1)}</ControlLabel></Col>
-				<Col sm = {3}><Checkbox id = {"isKiller" + (i * 6 + j)} checked = {st.currentArenaEvent.fatalEvent[i].p[j].isKiller} onChange = {this.toggleKiller}/></Col>
+				<Col sm = {3}><Checkbox id = {"isKiller" + (i * 6 + j)} checked = {st.currentArenaEvent.fatalEvent[i].p[j].isKiller} onChange = {this.toggleKiller} disabled = {st.currentArenaEvent.fatalEvent[i].deaths() === 0}/></Col>
 				<Col sm = {3}><Checkbox id = {"isKilled" + (i * 6 + j)} checked = {st.currentArenaEvent.fatalEvent[i].p[j].deathType > 0} onChange = {this.toggleVictim}/></Col>
 				<Col sm = {3}>
 					<FormControl id = {"deathType" + (i * 6 + j)} componentClass = "select" value = {st.currentArenaEvent.fatalEvent[i].p[j].deathType} onChange = {this.setDeathType}>
