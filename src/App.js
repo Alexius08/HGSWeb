@@ -19,6 +19,8 @@ class App extends Component{
 		advancedMode: false
 	}
 	this.updateMenu = this.updateMenu.bind(this);
+	this.resetEvents = this.resetEvents.bind(this);
+	this.resetSpecialEvents = this.resetSpecialEvents.bind(this);
   }
 	componentDidMount(){
 		if(localStorage.getItem("HGTribute")!=null){
@@ -97,6 +99,16 @@ class App extends Component{
 		this.setState({activePane: e.target.id});
 	}
 	
+	resetEvents(){
+		this.setState({"arenaEvent": [...DefaultEvent]});
+		console.log("Default events restored");
+	}
+	
+	resetSpecialEvents(){
+		this.setState({"specialArenaEvent": [...DefaultSpecialEvent]});
+		console.log("Default arena events restored");		
+	}
+	
 	render() {
 		var st = this.state, menuItem = ["main", "tribDb", "eventList", "settings"],
 			optText = ["Simulate", "Tribute Database", "Event List", "Settings"], options = [];
@@ -120,7 +132,7 @@ class App extends Component{
 				</Col>
 				<Col sm = {10} id = "display">
 					{st.activePane === "main" && <ReapingScreen availableTribute = {st.tribute}/>}
-					{st.activePane === "eventList" && <EventDBScreen arenaEvent = {st.arenaEvent} specialArenaEvent = {st.specialArenaEvent} />}
+					{st.activePane === "eventList" && <EventDBScreen arenaEvent = {st.arenaEvent} specialArenaEvent = {st.specialArenaEvent} resetEvents = {this.resetEvents} resetSpecialEvents = {this.resetSpecialEvents}/>}
 				</Col>
 			</Row>			
 		</Grid>);
@@ -770,7 +782,7 @@ class EventDBScreen extends Component{
 						<Button onClick = {this.addEvent}>Add new event</Button>
 						<Button disabled = {st.selectedEventIndex === -1} onClick = {this.editEvent}>Edit event</Button>
 						<Button disabled = {st.selectedEventIndex === -1}>Delete event</Button>
-						<Button>Restore defaults</Button>
+						<Button disabled = {JSON.stringify(DefaultEvent) === JSON.stringify(pr.arenaEvent)} onClick = {pr.resetEvents}>Restore defaults</Button>
 					</ButtonGroup>
 				</Col>
 			</Row>
@@ -787,7 +799,7 @@ class EventDBScreen extends Component{
 						<Button onClick = {this.addArenaEvent}>Add new arena event</Button>
 						<Button disabled = {st.selectedArenaEventIndex === -1} onClick = {this.editArenaEvent}>Edit arena event</Button>
 						<Button disabled = {st.selectedArenaEventIndex === -1}>Delete arena event</Button>
-						<Button>Restore defaults</Button>
+						<Button disabled = {JSON.stringify(DefaultSpecialEvent) === JSON.stringify(pr.specialArenaEvent)} onClick = {pr.resetSpecialEvents}>Restore defaults</Button>
 					</ButtonGroup>
 				</Col>
 			</Row>
