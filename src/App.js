@@ -185,7 +185,7 @@ class ReapingScreen extends Component{
 		this.setState({"curTributes": newArr});
 	}
 	updateState(e){
-		if (isFinite(e.target.value)){
+		if (isFinite(e.target.value) && e.target.value % 1 == 0){
 			var newVal = e.target.value, st = this.state;
 			var old = st.curTributes.slice(), newCount = 0;
 			if (e.target.id === "tributesPerDistrict"){
@@ -864,11 +864,13 @@ class EventEditor extends Component{
 		this.setState({currentEvent: Object.assign(this.state.currentEvent, {p: pl})});
 	}
 	setTribCount(e){
-		var pl = [];
-		for (var i = 0; i < e.target.value; i++){
-			pl.push(i < this.state.currentEvent.playerCount ? this.state.currentEvent.p[i] : {isKiller: false, deathType: 0});
+		if (isFinite(e.target.value) && e.target.value % 1 == 0){
+			var pl = [];
+			for (var i = 0; i < e.target.value; i++){
+				pl.push(i < this.state.currentEvent.playerCount ? this.state.currentEvent.p[i] : {isKiller: false, deathType: 0});
+			}
+			this.setState({currentEvent: Object.assign(this.state.currentEvent, {playerCount: e.target.value, p: pl})});
 		}
-		this.setState({currentEvent: Object.assign(this.state.currentEvent, {playerCount: e.target.value, p: pl})});
 	}
 	render(){
 		var st = this.state, pr = this.props, playerStatus = [];
@@ -1008,17 +1010,19 @@ class ArenaEventEditor extends Component{
 	}
 	
 	setTribCount(e){
-		var fatalEvents = [], pl = [];
-		for (var i = 0; i < 5; i++){
-			fatalEvents.push(this.state.currentArenaEvent.fatalEvent[i]);
+		if (isFinite(e.target.value) && e.target.value % 1 == 0){
+			var fatalEvents = [], pl = [];
+			for (var i = 0; i < 5; i++){
+				fatalEvents.push(this.state.currentArenaEvent.fatalEvent[i]);
+			}
+			var num = e.target.id.substr(9);
+			for (i = 0; i < e.target.value; i++){
+				pl.push(i < fatalEvents[num].playerCount ? fatalEvents[num].p[i] : {isKiller: false, deathType: 0});
+			}
+			fatalEvents[num].playerCount = e.target.value;		
+			fatalEvents[num].p = pl
+			this.setState({currentArenaEvent: Object.assign(this.state.currentArenaEvent, {fatalEvent: fatalEvents})});
 		}
-		var num = e.target.id.substr(9);
-		for (i = 0; i < e.target.value; i++){
-			pl.push(i < fatalEvents[num].playerCount ? fatalEvents[num].p[i] : {isKiller: false, deathType: 0});
-		}
-		fatalEvents[num].playerCount = e.target.value;		
-		fatalEvents[num].p = pl
-		this.setState({currentArenaEvent: Object.assign(this.state.currentArenaEvent, {fatalEvent: fatalEvents})});
 	}
 	
 	setLeadText(e){
