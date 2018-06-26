@@ -1055,8 +1055,11 @@ class ArenaEventEditor extends Component{
 			fatalEventTabs.push(<Tab key = {i} eventKey = {i + 1} title = {"Fatal event " + (i + 1)}>
 				<FormControl id = {"fatalEventText" + i} type = "text" value = {st.currentArenaEvent.fatalEvent[i].eventText} onChange = {this.setFatalEventText}/>
 				<InputGroup>
-					<InputGroup.Addon>Number of tributes involved</InputGroup.Addon>
-					<FormControl id = {"tribCount" + i} componentClass = "input" type = "number" min = {1} max = {6} value = {st.currentArenaEvent.fatalEvent[i].playerCount} onChange = {this.setTribCount}/>
+					{i > 0 && <InputGroup.Addon>Number of tributes involved</InputGroup.Addon>}
+					{i > 0 ? <FormControl id = {"tribCount" + i} componentClass = "input" type = "number" min = {1} max = {6}
+						value = {st.currentArenaEvent.fatalEvent[i].playerCount} onChange = {this.setTribCount}/> :
+						<div>Number of tributes involved: 1</div> }
+						
 				</InputGroup>				
 				<Row>
 					<Col sm = {3}/>
