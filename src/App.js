@@ -819,9 +819,9 @@ class EventDBScreen extends Component{
 					</ButtonGroup>
 				</Col>
 			</Row>
-			<EventEditor show = {st.showEventEditor} hide = {this.hideEventEditor}
+			<EventEditor show = {st.showEventEditor} hide = {this.hideEventEditor} arenaEvent = {pr.arenaEvent}
 			mode = {st.eventEditMode} selectedEvent = {st.arenaEventEditMode === "Edit" && st.selectedEvent}/>
-			<ArenaEventEditor show = {st.showArenaEventEditor} hide = {this.hideArenaEventEditor}
+			<ArenaEventEditor show = {st.showArenaEventEditor} hide = {this.hideArenaEventEditor} specialArenaEvent = {pr.specialArenaEvent}
 			mode = {st.arenaEventEditMode} selectedArenaEvent = {st.arenaEventEditMode === "Edit" && st.selectedArenaEvent}/>
 		</div>);
 	}
@@ -841,6 +841,7 @@ class EventEditor extends Component{
 		this.toggleVictim = this.toggleVictim.bind(this);
 		this.setDeathType = this.setDeathType.bind(this);
 		this.setTribCount = this.setTribCount.bind(this);
+		this.saveEvent = this.saveEvent.bind(this);
 	}
 	initializeValues(){
 		this.setState({currentEvent: (this.props.mode === "Edit" ? Object.assign(this.state.currentEvent, this.props.selectedEvent) : new ArenaEvent("", 0, 1, [{isKiller: false, deathType: 0}]))}); //direct assignment will overwrite the original
@@ -892,6 +893,64 @@ class EventEditor extends Component{
 			}
 			this.setState({currentEvent: Object.assign(this.state.currentEvent, {playerCount: e.target.value, p: pl})});
 		}
+	}
+	saveEvent(){
+		var st = this.state, pr = this.props;
+		if (st.currentEvent.eventText === ""){
+			console.log("Cannot leave event text empty");
+		}
+		else{
+			var matchFound = false;
+			for (var i = 0; i < pr.arenaEvent.length; i++){
+				if (pr.arenaEvent[i].eventText === st.currentEvent.eventText){
+					matchFound = true;
+					break;
+				}
+			}
+			if (matchFound){
+				console.log("Event already exists.");
+			}
+			else if (st.currentEvent.scope == 0){
+				console.log("No scope selected");
+			}
+			else{		
+				var hasEventTextError = false;
+				for (var i = 0; i < st.currentEvent.playerCount; i++){
+					if (st.currentEvent.eventText.search("[(]Player" + (i + 1) + "[)]") == -1){
+						console.log("Player " + (i + 1) + " not mentioned in event text");
+						hasEventTextError = true;
+						var pronoun = new RegExp("([(]his/her" + (i + 1) + "[)]|[(]him/her" + (i + 1) +"[)]|[(]he/she" + (i + 1) + "[)]|[(]himself/herself" + (i + 1) + "[)])", "i");
+						if (st.currentEvent.eventText.search(pronoun) > -1){
+							console.log("Pronoun for unmentioned tribute detected");
+							hasEventTextError = true;
+						}
+					}
+				}
+				for (i = st.currentEvent.playerCount; i < 6; i++){
+					pronoun = new RegExp("([(]his/her" + (i + 1) + "[)]|[(]him/her" + (i + 1) +"[)]|[(]he/she" + (i + 1) + "[)]|[(]himself/herself" + (i + 1) + "[)])", "i");
+					if (st.currentEvent.eventText.search("[(]Player" + (i + 1) + "[)]") > 1||st.currentEvent.eventText.search(pronoun) > -1){
+						console.log("Unnecessary mention of Player " + (i + 1));
+						hasEventTextError = true;
+					}
+				}
+				if (!hasEventTextError){
+					var hasNoKillers = false;
+					if (st.currentEvent.killers() == 0 && st.currentEvent.deaths() > 0){
+						for (i = 0; i < st.currentEvent.p.length; i++){
+							if (st.currentEvent.p[i].deathType == 1){
+								console.log("At least one killer needed");
+								hasNoKillers = true;
+							}
+						}
+					}
+					if (!hasNoKillers){
+						pr.arenaEvent.push(st.currentEvent);
+						pr.hide();
+					}
+				}
+			}
+		}
+
 	}
 	render(){
 		var st = this.state, pr = this.props, playerStatus = [];
@@ -950,7 +1009,7 @@ class EventEditor extends Component{
 					{playerStatus}
 			</Modal.Body>
 			<Modal.Footer>
-				<Button bsStyle = "default">Submit</Button>
+				<Button bsStyle = "default" onClick = {this.saveEvent}>Submit</Button>
 				<Button bsStyle = "danger" onClick = {pr.hide}>Cancel</Button>
 			</Modal.Footer>
 		</Modal>)
