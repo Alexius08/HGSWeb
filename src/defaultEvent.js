@@ -4,6 +4,7 @@ function ArenaEvent(eventText, scope, playerCount, p){
 	this.playerCount = playerCount;
 	this.p = p;
 	this.deaths = function(){return this.p.filter(function(player){return player.deathType > 0;}).length;};
+	this.killers = function(){return this.p.filter(function(player){return player.isKiller == true;}).length;};
 	this.isSharedKill = false;
 	this.isBloodbathEvent = function(){return this.scope % 2 === 1;};
 	this.isDayEvent = function(){return (this.scope >> 1) % 2 === 1;};
