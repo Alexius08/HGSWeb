@@ -827,6 +827,14 @@ class EventDBScreen extends Component{
 	}
 }
 
+function pronoun(n){
+	return new RegExp("([(]his/her" + n + "[)]|[(]him/her" + n + "[)]|[(]he/she" + n + "[)]|[(]himself/herself" + n + "[)])", "i");
+}
+
+function pl(n){
+	return ("[(]Player" + n + "[)]");
+}
+
 class EventEditor extends Component{
 	constructor(props){
 		super(props);
@@ -910,34 +918,32 @@ class EventEditor extends Component{
 			if (matchFound){
 				console.log("Event already exists.");
 			}
-			else if (st.currentEvent.scope == 0){
+			else if (st.currentEvent.scope === 0){
 				console.log("No scope selected");
 			}
 			else{		
 				var hasEventTextError = false;
-				for (var i = 0; i < st.currentEvent.playerCount; i++){
-					if (st.currentEvent.eventText.search("[(]Player" + (i + 1) + "[)]") == -1){
+				for (i = 0; i < st.currentEvent.playerCount; i++){
+					if (st.currentEvent.eventText.search(pl(i + 1)) === -1){
 						console.log("Player " + (i + 1) + " not mentioned in event text");
 						hasEventTextError = true;
-						var pronoun = new RegExp("([(]his/her" + (i + 1) + "[)]|[(]him/her" + (i + 1) +"[)]|[(]he/she" + (i + 1) + "[)]|[(]himself/herself" + (i + 1) + "[)])", "i");
-						if (st.currentEvent.eventText.search(pronoun) > -1){
+						if (st.currentEvent.eventText.search(pronoun(i + 1)) > -1){
 							console.log("Pronoun for unmentioned tribute detected");
 							hasEventTextError = true;
 						}
 					}
 				}
 				for (i = st.currentEvent.playerCount; i < 6; i++){
-					pronoun = new RegExp("([(]his/her" + (i + 1) + "[)]|[(]him/her" + (i + 1) +"[)]|[(]he/she" + (i + 1) + "[)]|[(]himself/herself" + (i + 1) + "[)])", "i");
-					if (st.currentEvent.eventText.search("[(]Player" + (i + 1) + "[)]") > 1||st.currentEvent.eventText.search(pronoun) > -1){
+					if (st.currentEvent.eventText.search(pl(i + 1)) > 1||st.currentEvent.eventText.search(pronoun(i + 1)) > -1){
 						console.log("Unnecessary mention of Player " + (i + 1));
 						hasEventTextError = true;
 					}
 				}
 				if (!hasEventTextError){
 					var hasNoKillers = false;
-					if (st.currentEvent.killers() == 0 && st.currentEvent.deaths() > 0){
+					if (st.currentEvent.killers() === 0 && st.currentEvent.deaths() > 0){
 						for (i = 0; i < st.currentEvent.p.length; i++){
-							if (st.currentEvent.p[i].deathType == 1){
+							if (st.currentEvent.p[i].deathType === 1){
 								console.log("At least one killer needed");
 								hasNoKillers = true;
 							}
@@ -1033,6 +1039,7 @@ class ArenaEventEditor extends Component{
 		this.setDeathType = this.setDeathType.bind(this);
 		this.setTribCount = this.setTribCount.bind(this);
 		this.setLeadText = this.setLeadText.bind(this);
+		this.saveArenaEvent = this.saveArenaEvent.bind(this);
 	}
 	
 	initializeValues(){
@@ -1114,6 +1121,99 @@ class ArenaEventEditor extends Component{
 		this.setState({currentArenaEvent: Object.assign(this.state.currentArenaEvent, {leadText: e.target.value})});
 	}
 	
+	saveArenaEvent(){
+		var st = this.state, pr = this.props;
+		if (st.currentArenaEvent.leadText === "" || st.currentArenaEvent.nonFatalEvent.eventText === "" ||
+			st.currentArenaEvent.fatalEvent[0].eventText === "" || st.currentArenaEvent.fatalEvent[1].eventText === "" ||
+			st.currentArenaEvent.fatalEvent[2].eventText === "" || st.currentArenaEvent.fatalEvent[3].eventText === "" ||
+			st.currentArenaEvent.fatalEvent[4].eventText === ""){
+				console.log("Event text cannot be empty");
+			}
+		else{
+			var hasClone = false;
+			for (var i = 0; i < pr.specialArenaEvent.length; i++){
+				if (st.currentArenaEvent.leadText === pr.specialArenaEvent[i].leadText){
+					if (st.currentArenaEvent.nonFatalEvent.eventText === pr.specialArenaEvent[i].nonFatalEvent.eventText){
+						var fatalEventMatch = true;
+						for (var j = 0; j < 5; j++){
+							if (st.currentArenaEvent.fatalEvent[i].eventText !== pr.specialArenaEvent.fatalEvent[i].eventText){
+								fatalEventMatch = false;
+								break;
+							}
+						}
+						if (fatalEventMatch){
+							hasClone = true;
+							break;
+						}
+					}
+				}
+			}
+			if (hasClone){
+				console.log("Event already exists");
+			}
+			else{
+				var hasNoKills = false;
+				for (i = 1; i < 5; i++){
+					if (st.currentArenaEvent.fatalEvent[i].deaths === 0){
+						console.log("A fatal subevent has no kills");
+						hasNoKills = true;
+						break;
+					}
+				}
+				if (!hasNoKills){
+					var hasBuggedSubevent = false;
+					for (i = 0; i < 5; i++){
+						var hasEventTextError = false;
+						for (j = 0; j < st.currentArenaEvent.fatalEvent[i].playerCount; j++){
+							if (st.currentArenaEvent.fatalEvent[i].eventText.search(pl(j + 1)) === -1){
+								console.log("Player " + (j + 1) + " not mentioned in event text");
+								hasEventTextError = true;
+								if (st.currentArenaEvent.fatalEvent[i].eventText.search(pronoun(j + 1)) > -1){
+									console.log("Pronoun for unmentioned tribute detected");
+									hasEventTextError = true;
+								}
+							}
+						}
+						for (j = st.currentArenaEvent.playerCount; j < 6; j++){
+							if (st.currentArenaEvent.fatalEvent[i].eventText.search(pl(j + 1)) > 1||st.currentArenaEvent.fatalEvent[i].eventText.search(pronoun(j + 1)) > -1){
+								console.log("Unnecessary mention of Player " + (j + 1));
+								hasEventTextError = true;
+							}
+						}
+						if (hasEventTextError){
+							hasBuggedSubevent = true;
+							break;
+						}
+						else {
+							var hasNoKillers = false;
+							if (st.currentArenaEvent.fatalEvent[i].killers() === 0 && st.currentArenaEvent.fatalEvent[i].deaths() > 0){
+								for (j = 0; j < st.currentArenaEvent.fatalEvent[i].p.length; j++){
+									if (st.currentArenaEvent.fatalEvent[i].p[j].deathType === 1){
+										console.log("At least one killer needed");
+										hasNoKillers = true;
+										break;
+									}
+								}
+							}
+							if (hasNoKillers){
+								hasBuggedSubevent = true;
+								break;
+							}
+						}							
+					}
+					if (hasBuggedSubevent){
+						console.log("One of the subevents has a problem");
+					}
+					else{
+						pr.specialArenaEvent.push(st.currentArenaEvent);
+						pr.hide();
+					}
+				}
+			}
+		}
+
+	}
+	
 	render(){
 		var pr = this.props, st = this.state, fatalEventTabs = [];
 		for (var i = 0; i < 5; i++){
@@ -1166,7 +1266,7 @@ class ArenaEventEditor extends Component{
 			</Tabs>
 			</Modal.Body>
 			<Modal.Footer>
-				<Button bsStyle = "default">Submit</Button>
+				<Button bsStyle = "default" onClick = {this.saveArenaEvent}>Submit</Button>
 				<Button bsStyle = "danger" onClick = {pr.hide}>Cancel</Button>
 			</Modal.Footer>
 		</Modal>
