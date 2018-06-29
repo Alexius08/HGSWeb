@@ -612,6 +612,8 @@ class EventDBScreen extends Component{
 		this.editArenaEvent = this.editArenaEvent.bind(this);
 		this.showArenaEventEditor = this.showArenaEventEditor.bind(this);
 		this.hideArenaEventEditor = this.hideArenaEventEditor.bind(this);
+		this.deleteEvent = this.deleteEvent.bind(this);
+		this.deleteArenaEvent = this.deleteArenaEvent.bind(this);
 	}
 	
 	showEventEditor(){
@@ -676,6 +678,16 @@ class EventDBScreen extends Component{
 	
 	hideArenaEventEditor(){
 		this.setState({showArenaEventEditor: false});
+	}
+	
+	deleteEvent(){
+		this.props.arenaEvent.splice(this.state.selectedEventIndex, 1);
+		this.setState({selectedEventIndex: -1});
+	}
+	
+	deleteArenaEvent(){
+		this.props.specialArenaEvent.splice(this.state.selectedArenaEventIndex, 1);
+		this.setState({selectedArenaEventIndex: -1});
 	}
 	
 	render(){
@@ -785,7 +797,7 @@ class EventDBScreen extends Component{
 					<ButtonGroup vertical bsSize = "sm">
 						<Button onClick = {this.addEvent}>Add new event</Button>
 						<Button disabled = {st.selectedEventIndex === -1} onClick = {this.editEvent}>Edit event</Button>
-						<Button disabled = {st.selectedEventIndex === -1}>Delete event</Button>
+						<Button disabled = {st.selectedEventIndex === -1} onClick = {this.deleteEvent}>Delete event</Button>
 						<Button disabled = {JSON.stringify(DefaultEvent) === JSON.stringify(pr.arenaEvent)} onClick = {pr.resetEvents}>Restore defaults</Button>
 					</ButtonGroup>
 				</Col>
@@ -802,7 +814,7 @@ class EventDBScreen extends Component{
 					<ButtonGroup vertical bsSize = "sm">
 						<Button onClick = {this.addArenaEvent}>Add new arena event</Button>
 						<Button disabled = {st.selectedArenaEventIndex === -1} onClick = {this.editArenaEvent}>Edit arena event</Button>
-						<Button disabled = {st.selectedArenaEventIndex === -1}>Delete arena event</Button>
+						<Button disabled = {st.selectedArenaEventIndex === -1} onClick = {this.deleteArenaEvent}>Delete arena event</Button>
 						<Button disabled = {JSON.stringify(DefaultSpecialEvent) === JSON.stringify(pr.specialArenaEvent)} onClick = {pr.resetSpecialEvents}>Restore defaults</Button>
 					</ButtonGroup>
 				</Col>
