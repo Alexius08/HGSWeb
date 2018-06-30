@@ -1044,9 +1044,11 @@ class ArenaEventEditor extends Component{
 	
 	initializeValues(){
 		var pr = this.props;
-		pr.selectedArenaEvent.nonFatalEvent = Object.assign(new ArenaEvent("", 0, 1, [{isKiller: false, deathType: 0}]), pr.selectedArenaEvent.nonFatalEvent);
-		for (var i = 0; i < 5; i++){
-			pr.selectedArenaEvent.fatalEvent[i] = Object.assign(new ArenaEvent("", 0, 1, [{isKiller: false, deathType: 0}]), pr.selectedArenaEvent.fatalEvent[i]);
+		if (pr.mode === "Edit"){
+			pr.selectedArenaEvent.nonFatalEvent = Object.assign(new ArenaEvent("", 0, 1, [{isKiller: false, deathType: 0}]), pr.selectedArenaEvent.nonFatalEvent);
+			for (var i = 0; i < 5; i++){
+				pr.selectedArenaEvent.fatalEvent[i] = Object.assign(new ArenaEvent("", 0, 1, [{isKiller: false, deathType: 0}]), pr.selectedArenaEvent.fatalEvent[i]);
+			}
 		}
 		this.setState({activeTab: 0,
 						currentArenaEvent: (this.props.mode === "Edit" ? Object.assign(new SpecialArenaEvent(""), pr.selectedArenaEvent) : new SpecialArenaEvent(""))}); //direct assignment will overwrite the original
