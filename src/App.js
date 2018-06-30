@@ -597,8 +597,10 @@ class EventDBScreen extends Component{
 
 			showEventEditor: false,
 			eventEditMode: "Add",
+			showEventImporter: false,
 			showArenaEventEditor: false,
-			arenaEventEditMode: "Add"
+			arenaEventEditMode: "Add",
+			showArenaEventImporter: false
 		}
 		this.getArenaEvent = this.getArenaEvent.bind(this);
 		this.getSelectedEvent = this.getSelectedEvent.bind(this);
@@ -614,6 +616,8 @@ class EventDBScreen extends Component{
 		this.hideArenaEventEditor = this.hideArenaEventEditor.bind(this);
 		this.deleteEvent = this.deleteEvent.bind(this);
 		this.deleteArenaEvent = this.deleteArenaEvent.bind(this);
+		this.showEventImporter = this.showEventImporter.bind(this);
+		this.hideEventImporter = this.hideEventImporter.bind(this)
 	}
 	
 	showEventEditor(){
@@ -688,6 +692,13 @@ class EventDBScreen extends Component{
 	deleteArenaEvent(){
 		this.props.specialArenaEvent.splice(this.state.selectedArenaEventIndex, 1);
 		this.setState({selectedArenaEventIndex: -1});
+	}
+	
+	showEventImporter(){
+		this.setState({showEventImporter: true});
+	}
+	hideEventImporter(){
+		this.setState({showEventImporter: false});
 	}
 	
 	render(){
@@ -798,6 +809,7 @@ class EventDBScreen extends Component{
 						<Button onClick = {this.addEvent}>Add new event</Button>
 						<Button disabled = {st.selectedEventIndex === -1} onClick = {this.editEvent}>Edit event</Button>
 						<Button disabled = {st.selectedEventIndex === -1} onClick = {this.deleteEvent}>Delete event</Button>
+						<Button onClick = {this.showEventImporter}>Import events</Button>
 						<Button disabled = {JSON.stringify(DefaultEvent) === JSON.stringify(pr.arenaEvent)} onClick = {pr.resetEvents}>Restore defaults</Button>
 					</ButtonGroup>
 				</Col>
@@ -821,6 +833,7 @@ class EventDBScreen extends Component{
 			</Row>
 			<EventEditor show = {st.showEventEditor} hide = {this.hideEventEditor} arenaEvent = {pr.arenaEvent}
 			mode = {st.eventEditMode} selectedEvent = {st.arenaEventEditMode === "Edit" && st.selectedEvent}/>
+			<EventImporter show = {st.showEventImporter} hide = {this.hideEventImporter} arenaEvent = {pr.arenaEvent}/>
 			<ArenaEventEditor show = {st.showArenaEventEditor} hide = {this.hideArenaEventEditor} specialArenaEvent = {pr.specialArenaEvent}
 			mode = {st.arenaEventEditMode} selectedArenaEvent = {st.arenaEventEditMode === "Edit" && st.selectedArenaEvent}/>
 		</div>);
@@ -833,6 +846,36 @@ function pronoun(n){
 
 function pl(n){
 	return ("[(]Player" + n + "[)]");
+}
+
+function isValidEvent(evt){
+	var hasEventTextError = false;
+	for (var i = 0; i < evt.playerCount; i++){
+		if (evt.eventText.search(pl(i + 1)) === -1){
+			console.log("Player " + (i + 1) + " not mentioned in event text");
+			hasEventTextError = true;
+			if (evt.eventText.search(pronoun(i + 1)) > -1){
+				console.log("Pronoun for unmentioned tribute detected");
+				hasEventTextError = true;
+			}
+		}
+	}
+	for (i = evt.playerCount; i < 6; i++){
+		if (evt.eventText.search(pl(i + 1)) > 1||evt.eventText.search(pronoun(i + 1)) > -1){
+			console.log("Unnecessary mention of Player " + (i + 1));
+			hasEventTextError = true;
+		}
+	}
+	var hasNoKillers = false;
+	if (evt.killers() === 0 && evt.deaths() > 0){
+		for (i = 0; i < evt.p.length; i++){
+			if (evt.p[i].deathType === 1){
+				console.log("At least one killer needed");
+				hasNoKillers = true;
+			}
+		}
+	}
+	return (!(hasNoKillers || hasEventTextError));
 }
 
 class EventEditor extends Component{
@@ -921,39 +964,9 @@ class EventEditor extends Component{
 			else if (st.currentEvent.scope === 0){
 				console.log("No scope selected");
 			}
-			else{		
-				var hasEventTextError = false;
-				for (i = 0; i < st.currentEvent.playerCount; i++){
-					if (st.currentEvent.eventText.search(pl(i + 1)) === -1){
-						console.log("Player " + (i + 1) + " not mentioned in event text");
-						hasEventTextError = true;
-						if (st.currentEvent.eventText.search(pronoun(i + 1)) > -1){
-							console.log("Pronoun for unmentioned tribute detected");
-							hasEventTextError = true;
-						}
-					}
-				}
-				for (i = st.currentEvent.playerCount; i < 6; i++){
-					if (st.currentEvent.eventText.search(pl(i + 1)) > 1||st.currentEvent.eventText.search(pronoun(i + 1)) > -1){
-						console.log("Unnecessary mention of Player " + (i + 1));
-						hasEventTextError = true;
-					}
-				}
-				if (!hasEventTextError){
-					var hasNoKillers = false;
-					if (st.currentEvent.killers() === 0 && st.currentEvent.deaths() > 0){
-						for (i = 0; i < st.currentEvent.p.length; i++){
-							if (st.currentEvent.p[i].deathType === 1){
-								console.log("At least one killer needed");
-								hasNoKillers = true;
-							}
-						}
-					}
-					if (!hasNoKillers){
-						pr.arenaEvent.push(st.currentEvent);
-						pr.hide();
-					}
-				}
+			else if (isValidEvent(st.currentEvent)){
+				pr.arenaEvent.push(st.currentEvent);
+				pr.hide();
 			}
 		}
 
@@ -1169,44 +1182,12 @@ class ArenaEventEditor extends Component{
 				}
 				if (!hasNoKills){
 					var hasBuggedSubevent = false;
+					if (isValidEvent(st.currentArenaEvent.nonFatalEvent)) hasBuggedSubevent = true;
 					for (i = 0; i < 5; i++){
-						var hasEventTextError = false;
-						for (j = 0; j < st.currentArenaEvent.fatalEvent[i].playerCount; j++){
-							if (st.currentArenaEvent.fatalEvent[i].eventText.search(pl(j + 1)) === -1){
-								console.log("Player " + (j + 1) + " not mentioned in event text");
-								hasEventTextError = true;
-								if (st.currentArenaEvent.fatalEvent[i].eventText.search(pronoun(j + 1)) > -1){
-									console.log("Pronoun for unmentioned tribute detected");
-									hasEventTextError = true;
-								}
-							}
-						}
-						for (j = st.currentArenaEvent.playerCount; j < 6; j++){
-							if (st.currentArenaEvent.fatalEvent[i].eventText.search(pl(j + 1)) > 1||st.currentArenaEvent.fatalEvent[i].eventText.search(pronoun(j + 1)) > -1){
-								console.log("Unnecessary mention of Player " + (j + 1));
-								hasEventTextError = true;
-							}
-						}
-						if (hasEventTextError){
+						if (isValidEvent(st.currentArenaEvent.fatalEvent[i])){
 							hasBuggedSubevent = true;
 							break;
 						}
-						else {
-							var hasNoKillers = false;
-							if (st.currentArenaEvent.fatalEvent[i].killers() === 0 && st.currentArenaEvent.fatalEvent[i].deaths() > 0){
-								for (j = 0; j < st.currentArenaEvent.fatalEvent[i].p.length; j++){
-									if (st.currentArenaEvent.fatalEvent[i].p[j].deathType === 1){
-										console.log("At least one killer needed");
-										hasNoKillers = true;
-										break;
-									}
-								}
-							}
-							if (hasNoKillers){
-								hasBuggedSubevent = true;
-								break;
-							}
-						}							
 					}
 					if (hasBuggedSubevent){
 						console.log("One of the subevents has a problem");
@@ -1278,6 +1259,155 @@ class ArenaEventEditor extends Component{
 			</Modal.Footer>
 		</Modal>
 		)
+	}
+}
+
+class EventImporter extends Component{
+	constructor(props){
+		super(props);
+		this.state = {mode: "Append", rawText: "", eventScope: 0}
+		this.setRawText = this.setRawText.bind(this);
+		this.appendEvents = this.appendEvents.bind(this);
+		this.parseText = this.parseText.bind(this);
+		this.overwriteEvents = this.overwriteEvents.bind(this);
+		this.toggleScope = this.toggleScope.bind(this);
+	}
+	
+	setRawText(e){
+		this.setState({rawText: e.target.value});
+	}
+	
+	appendEvents(){
+		var eventQueue = this.parseText(), pr = this.props;
+		if (eventQueue.length > 0){
+			for (var i = 0; i < eventQueue.length; i++){
+				var matchFound = false;
+				for (var j = 0; j < pr.arenaEvent.length; j++){
+					if (pr.arenaEvent[j].eventText === eventQueue[i].eventText){
+						matchFound = true;
+						if (!pr.arenaEvent[j].isBloodbathEvent() && eventQueue[i].isBloodbathEvent()) pr.arenaEvent[j].scope += 1;
+						if (!pr.arenaEvent[j].isDayEvent() && eventQueue[i].isDayEvent()) pr.arenaEvent[j].scope += 2;
+						if (!pr.arenaEvent[j].isNightEvent() && eventQueue[i].isNightEvent()) pr.arenaEvent[j].scope += 4;
+						if (!pr.arenaEvent[j].isFeastEvent() && eventQueue[i].isFeastEvent()) pr.arenaEvent[j].scope += 8;
+						break;
+					}
+				}
+				if(!matchFound && isValidEvent(eventQueue[i])){
+					pr.arenaEvent.push(eventQueue[i]);
+				}
+			}
+		}
+	}
+	
+	parseText(){
+		var eventQueue = [], eventHeader = /#[0-9]+[.].+/, tribCtr = /\nTributes: [1-6]/,
+		killerDisplay = /\nKiller: (None|(Player[1-6][,] ){1,5}Player[1-6]|Player[1-6])/,
+		killedDisplay = /\nKilled: ((Player[1-6][,] ){1,5}Player[1-6]|Player[1-6])/,
+		killPanel = new RegExp(killerDisplay.source + killedDisplay.source), footer = /(?=[\n]+Remove)/;
+		if (this.state.eventScope > 0){
+			var nonFatalEvents = this.state.rawText.match(new RegExp(eventHeader.source + tribCtr.source + footer.source, "g"));
+			var fatalEvents = this.state.rawText.match(new RegExp(eventHeader.source + tribCtr.source + killPanel.source, "g"));
+			var result = [];
+			if (nonFatalEvents){
+				result = fatalEvents ? nonFatalEvents.push(...fatalEvents) : nonFatalEvents;
+			}
+			else if (fatalEvents){
+				result = fatalEvents;
+			}
+			else{
+				console.log("No matches found");
+			}
+			console.log(result);
+			
+			for (var i = 0; i < result.length; i++){
+				var newEvent = new ArenaEvent("", 0, 1, []), line = result[i].split("\n");
+				newEvent.eventText = line[0].slice(line[0].indexOf(".") + 2);
+				newEvent.playerCount = parseInt(line[1].slice(10), 10);
+				newEvent.scope = this.state.eventScope;
+				if (line.length > 2){
+					for (var j = 0; j < newEvent.playerCount; j++){
+						newEvent.p.push({isKiller: (line[2].search("Player" + j) > -1), deathType: 0});
+						if (newEvent.p[j].isKiller && line[3].search("Player" + j) > -1){
+							newEvent.p[j].deathType = 2;
+						}
+					}
+					for (j = 0; j < newEvent.playerCount; j++){
+						if (line[3].search("Player" + j) > -1){
+							newEvent.p[j].deathType = (newEvent.killers() > 0 ? 1 : 3);
+						}
+					}
+					newEvent.isSharedKill = newEvent.killers() > 1;
+				}
+				else{
+					for (j = 0; j < newEvent.playerCount; j++){
+						newEvent.p.push({isKiller: false, deathType: 0});
+					}
+				}
+				eventQueue.push(newEvent);
+			}
+		}
+		else console.log("No scope selected");
+		return (eventQueue);
+	}
+	
+	overwriteEvents(){
+		var eventQueue = this.parseText(), pr = this.props;
+		if (eventQueue.length > 0){
+			pr.arenaEvent = []; //find another way of clearing the current event list
+			for (var i = 0; i < eventQueue.length; i++){
+				var matchFound = false;
+				for (var j = 0; j < pr.arenaEvent.length; j++){
+					if (pr.arenaEvent[j].eventText === eventQueue[i].eventText){
+						matchFound = true;
+						if (!pr.arenaEvent[j].isBloodbathEvent() && eventQueue[i].isBloodbathEvent()) pr.arenaEvent[j].scope += 1;
+						if (!pr.arenaEvent[j].isDayEvent() && eventQueue[i].isDayEvent()) pr.arenaEvent[j].scope += 2;
+						if (!pr.arenaEvent[j].isNightEvent() && eventQueue[i].isNightEvent()) pr.arenaEvent[j].scope += 4;
+						if (!pr.arenaEvent[j].isFeastEvent() && eventQueue[i].isFeastEvent()) pr.arenaEvent[j].scope += 8;
+						break;
+					}
+				}
+				if(!matchFound && isValidEvent(eventQueue[i])){
+					pr.arenaEvent.push(eventQueue[i]);
+				}
+			}
+		}
+	}
+	
+	toggleScope(e){
+		var val = this.state.eventScope + (parseInt(e.target.id.substr(5), 10) * (e.target.checked ? 1 : -1));
+		this.setState({eventScope: val});
+	}
+	
+	render(){
+		var pr = this.props, st = this.state;
+		return (<Modal backdrop = "static" show = {pr.show} onHide = {pr.hide}>
+			<Modal.Header closeButton>
+				<Modal.Title>{"Import events"}</Modal.Title>
+			</Modal.Header>
+			<Modal.Body>
+				<FormControl componentClass = "textarea" placeholder = "Paste event list here" value = {st.rawText} onChange = {this.setRawText}/>
+				<FormGroup>
+					<Col componentClass = {ControlLabel} sm = {3}>Event scope</Col>
+					<Col sm = {2}>
+						<Checkbox inline id = "scope1" checked = {st.eventScope % 2 === 1} onChange = {this.toggleScope}>Bloodbath</Checkbox>
+					</Col>
+					<Col sm = {2}>
+						<Checkbox inline id = "scope2" checked = {(st.eventScope >> 1) % 2 === 1} onChange = {this.toggleScope}>Day</Checkbox>
+					</Col>
+					<Col sm = {2}>
+						<Checkbox inline id = "scope4" checked = {(st.eventScope >> 2) % 2 === 1} onChange = {this.toggleScope}>Night</Checkbox>
+					</Col>
+					<Col sm = {2}>
+						<Checkbox inline id = "scope8" checked = {(st.eventScope >> 3) % 2 === 1} onChange = {this.toggleScope}>Feast</Checkbox>
+					</Col>
+				</FormGroup>
+			</Modal.Body>
+			<Modal.Footer>
+				<Button bsStyle = "default" onClick = {this.appendEvents}>Append</Button>
+				<Button bsStyle = "default" onClick = {this.overwriteEvents}>Overwrite</Button>
+				<Button bsStyle = "danger" onClick = {pr.hide}>Cancel</Button>
+			</Modal.Footer>
+		</Modal>)
 	}
 }
 
