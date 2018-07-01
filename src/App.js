@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import {Grid, Row, Col, Collapse, Form, FormGroup, ControlLabel, FormControl,
 		DropdownButton, MenuItem, Modal, InputGroup, Button, ButtonGroup, ListGroup,
-		ListGroupItem, Checkbox, Tabs, Tab} from 'react-bootstrap';
+		ListGroupItem, Checkbox, Tabs, Tab, Radio} from 'react-bootstrap';
 import ArenaEvent, {DefaultEvent} from './defaultEvent';
 import SpecialArenaEvent, {DefaultSpecialEvent} from './defaultSpecialEvent';
 
@@ -133,6 +133,7 @@ class App extends Component{
 				<Col sm = {10} id = "display">
 					{st.activePane === "main" && <ReapingScreen availableTribute = {st.tribute}/>}
 					{st.activePane === "eventList" && <EventDBScreen arenaEvent = {st.arenaEvent} specialArenaEvent = {st.specialArenaEvent} resetEvents = {this.resetEvents} resetSpecialEvents = {this.resetSpecialEvents}/>}
+					{st.activePane === "settings" && <SettingsPanel/>}
 				</Col>
 			</Row>			
 		</Grid>);
@@ -1545,6 +1546,33 @@ class ArenaEventImporter extends Component{
 				<Button bsStyle = "danger" onClick = {pr.hide}>Close</Button>
 			</Modal.Footer>
 		</Modal>)
+	}
+}
+
+class SettingsPanel extends Component{
+	render(){
+		return(<form>
+	<FormGroup controlId="fatalEventFreq">
+		<ControlLabel>Fatal event frequency</ControlLabel>
+		<Radio name="radioGroup" inline>Very High</Radio>{' '}
+		<Radio name="radioGroup" inline>High</Radio>{' '}
+		<Radio name="radioGroup" inline>Medium</Radio>{' '}
+		<Radio name="radioGroup" inline>Low</Radio>
+	</FormGroup>
+	<FormGroup controlId="defaultEventFreq">
+		<ControlLabel>Default bloodbath/feast event frequency</ControlLabel>
+		<Radio name="radioGroup2" inline>Normal</Radio>{' '}
+		<Radio name="radioGroup2" inline>Reduced</Radio>{' '}
+	  </FormGroup>
+	<FormGroup controlId="arenaEventFreq">
+		<ControlLabel>Arena event frequency</ControlLabel>
+		<Radio name="radioGroup3" inline>High</Radio>{' '}
+		<Radio name="radioGroup3" inline>Low</Radio>{' '}
+		<Radio name="radioGroup3" inline>None</Radio>{' '}
+	</FormGroup>
+	<Checkbox inline>Show recent deaths</Checkbox>
+	<Checkbox inline>Enable tribute watchlist and event filter</Checkbox>
+		</form>)
 	}
 }
 
