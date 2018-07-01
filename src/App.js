@@ -620,6 +620,8 @@ class EventDBScreen extends Component{
 		this.hideEventImporter = this.hideEventImporter.bind(this)
 		this.showArenaEventImporter = this.showArenaEventImporter.bind(this);
 		this.hideArenaEventImporter = this.hideArenaEventImporter.bind(this);
+		this.resetEvents = this.resetEvents.bind(this);
+		this.resetSpecialEvents = this.resetSpecialEvents.bind(this);
 	}
 	
 	showEventEditor(){
@@ -700,14 +702,25 @@ class EventDBScreen extends Component{
 		this.setState({showEventImporter: true});
 	}
 	hideEventImporter(){
-		this.setState({showEventImporter: false});
+		this.setState({showEventImporter: false, selectedEvent: new ArenaEvent("", 0, 1, [{isKiller: false, deathType: 0}]), selectedEventIndex: -1});
 	}
 	
 	showArenaEventImporter(){
 		this.setState({showArenaEventImporter: true});
 	}
 	hideArenaEventImporter(){
-		this.setState({showArenaEventImporter: false});
+		this.setState({showArenaEventImporter: false, selectedArenaEventIndex: -1, selectedArenaEvent: new SpecialArenaEvent("")});
+	}
+	
+	resetEvents(){
+		
+		this.props.resetEvents();
+		this.setState({selectedEvent: new ArenaEvent("", 0, 1, [{isKiller: false, deathType: 0}]), selectedEventIndex: -1});
+	}
+	
+	resetSpecialEvents(){
+		this.props.resetSpecialEvents();
+		this.setState({selectedArenaEventIndex: -1, selectedArenaEvent: new SpecialArenaEvent("")});
 	}
 	
 	render(){
@@ -819,7 +832,7 @@ class EventDBScreen extends Component{
 						<Button disabled = {st.selectedEventIndex === -1} onClick = {this.editEvent}>Edit event</Button>
 						<Button disabled = {st.selectedEventIndex === -1} onClick = {this.deleteEvent}>Delete event</Button>
 						<Button onClick = {this.showEventImporter}>Import events</Button>
-						<Button disabled = {JSON.stringify(DefaultEvent) === JSON.stringify(pr.arenaEvent)} onClick = {pr.resetEvents}>Restore defaults</Button>
+						<Button disabled = {JSON.stringify(DefaultEvent) === JSON.stringify(pr.arenaEvent)} onClick = {this.resetEvents}>Restore defaults</Button>
 					</ButtonGroup>
 				</Col>
 			</Row>
@@ -829,7 +842,7 @@ class EventDBScreen extends Component{
 					<ListGroup id = "arenaEventSearchResult">{arenaEventList}</ListGroup>
 				</Col>
 				<Col sm = {5}>
-					{st.selectedArenaEventIndex === -1 ? null : arenaEventDesc}
+					{st.selectedArenaEventIndex > -1 && arenaEventDesc}
 				</Col>
 				<Col sm = {2}>
 					<ButtonGroup vertical bsSize = "sm">
@@ -837,7 +850,7 @@ class EventDBScreen extends Component{
 						<Button disabled = {st.selectedArenaEventIndex === -1} onClick = {this.editArenaEvent}>Edit arena event</Button>
 						<Button disabled = {st.selectedArenaEventIndex === -1} onClick = {this.deleteArenaEvent}>Delete arena event</Button>
 						<Button onClick = {this.showArenaEventImporter}>Import arena events</Button>
-						<Button disabled = {JSON.stringify(DefaultSpecialEvent) === JSON.stringify(pr.specialArenaEvent)} onClick = {pr.resetSpecialEvents}>Restore defaults</Button>
+						<Button disabled = {JSON.stringify(DefaultSpecialEvent) === JSON.stringify(pr.specialArenaEvent)} onClick = {this.resetSpecialEvents}>Restore defaults</Button>
 					</ButtonGroup>
 				</Col>
 			</Row>
