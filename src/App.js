@@ -977,6 +977,7 @@ class EventEditor extends Component{
 			}
 			else if (isValidEvent(st.currentEvent)){
 				pr.arenaEvent.push(st.currentEvent);
+				localStorage.setItem("HGEvent", JSON.stringify(pr.arenaEvent));
 				pr.hide();
 			}
 		}
@@ -1205,6 +1206,7 @@ class ArenaEventEditor extends Component{
 					}
 					else{
 						pr.specialArenaEvent.push(st.currentArenaEvent);
+						localStorage.setItem("HGSpecEvent", JSON.stringify(pr.specialArenaEvent));
 						pr.hide();
 					}
 				}
@@ -1314,6 +1316,7 @@ class EventImporter extends Component{
 				pr.arenaEvent.push(eventQueue[i]);
 			}
 		}
+		localStorage.setItem("HGEvent", JSON.stringify(pr.arenaEvent));
 	}
 	
 	initializeValues(){
@@ -1338,7 +1341,6 @@ class EventImporter extends Component{
 			else{
 				console.log("No matches found");
 			}
-			console.log(result);
 			
 			for (var i = 0; i < result.length; i++){
 				var newEvent = new ArenaEvent("", 0, 1, []), line = result[i].split("\n");
@@ -1473,6 +1475,7 @@ class ArenaEventImporter extends Component{
 				pr.specialArenaEvent.push(eventQueue[i]);
 			}
 		}
+		localStorage.setItem("HGSpecEvent", JSON.stringify(pr.specialArenaEvent));
 	}
 	
 	parseText(){
@@ -1488,7 +1491,6 @@ class ArenaEventImporter extends Component{
 		if (result){
 			for (var i = 0; i < result.length; i++){
 				var newEvent = new SpecialArenaEvent(""), line = result[i].split("\n");
-				console.log(line);
 				newEvent.leadText = line[0].slice(line[0].indexOf(".") + 2);
 				newEvent.nonFatalEvent.eventText = line[2].slice(line[2].indexOf(".") + 2);
 				for (var j = 0; j < 5; j++){
@@ -1509,7 +1511,6 @@ class ArenaEventImporter extends Component{
 					newEvent.fatalEvent[j].isSharedKill = newEvent.fatalEvent[j].killers() > 1;
 				}
 				eventQueue.push(newEvent);
-				console.log(newEvent);
 			}
 		}
 		return (eventQueue);
