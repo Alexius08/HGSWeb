@@ -1326,13 +1326,13 @@ class EventImporter extends Component{
 				newEvent.scope = this.state.eventScope;
 				if (line.length > 2){
 					for (var j = 0; j < newEvent.playerCount; j++){
-						newEvent.p.push({isKiller: (line[2].search("Player" + j) > -1), deathType: 0});
-						if (newEvent.p[j].isKiller && line[3].search("Player" + j) > -1){
+						newEvent.p.push({isKiller: (line[2].search("Player" + (j + 1)) > -1), deathType: 0});
+						if (newEvent.p[j].isKiller && line[3].search("Player" + (j + 1)) > -1){
 							newEvent.p[j].deathType = 2;
 						}
 					}
 					for (j = 0; j < newEvent.playerCount; j++){
-						if (line[3].search("Player" + j) > -1){
+						if (line[3].search("Player" + (j + 1)) > -1){
 							newEvent.p[j].deathType = (newEvent.killers() > 0 ? 1 : 3);
 						}
 					}
