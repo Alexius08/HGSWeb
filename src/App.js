@@ -1353,7 +1353,7 @@ class EventImporter extends Component{
 	overwriteEvents(){
 		var eventQueue = this.parseText(), pr = this.props;
 		if (eventQueue.length > 0){
-			pr.arenaEvent = []; //find another way of clearing the current event list
+			pr.arenaEvent.splice(0, pr.arenaEvent.length);
 			for (var i = 0; i < eventQueue.length; i++){
 				var matchFound = false;
 				for (var j = 0; j < pr.arenaEvent.length; j++){
