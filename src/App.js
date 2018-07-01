@@ -110,7 +110,7 @@ class App extends Component{
 	}
 	
 	render() {
-		var st = this.state, menuItem = ["main", "tribDb", "eventList", "settings"],
+		var st = this.state, menuItem = ["main", "tribStats", "eventList", "settings"],
 			optText = ["Simulate", "Tribute Database", "Event List", "Settings"], options = [];
 		
 		for (var i = 0; i < 4; i++){
@@ -134,6 +134,7 @@ class App extends Component{
 					{st.activePane === "main" && <ReapingScreen availableTribute = {st.tribute}/>}
 					{st.activePane === "eventList" && <EventDBScreen arenaEvent = {st.arenaEvent} specialArenaEvent = {st.specialArenaEvent} resetEvents = {this.resetEvents} resetSpecialEvents = {this.resetSpecialEvents}/>}
 					{st.activePane === "settings" && <SettingsPanel/>}
+					{st.activePane === "tribStats" && <TribStats/>}
 				</Col>
 			</Row>			
 		</Grid>);
@@ -581,6 +582,57 @@ class TributePicker extends Component{
 				<Button bsStyle = "danger" onClick = {pr.hide}>Cancel</Button>
 			</Modal.Footer>
 		</Modal>)
+	}
+}
+
+class TribStats extends Component{
+	render(){
+		return(<Row>
+			<Col sm = {4}>
+			<FormControl componentClass = "select" size = {6} />
+			</Col>
+			<Col sm = {4}><table>
+				<tbody>
+				<tr>
+					<td><b>Name</b></td>
+					<td>.............</td>
+				</tr>
+				<tr>
+				<td><b>Wins</b></td>
+				<td align="right">0</td>
+				</tr>
+				<tr>
+					<td><b>Kills</b></td>
+					<td align="right">0</td>
+				</tr>
+				<tr>
+					<td>Solo Kills</td>
+					<td align="right">0</td>
+				</tr>
+				<tr>
+					<td>Shared Kills</td>
+					<td align="right">0</td>
+				</tr>
+				<tr>
+					<td><b>Deaths</b></td>
+					<td align="right">0</td>
+				</tr>
+				<tr>
+					<td>Combat Deaths</td>
+					<td align="right">0</td>
+				</tr>
+				<tr>
+					<td>Suicides</td>
+					<td align="right">0</td>
+				</tr>
+				<tr>
+					<td>Other Deaths</td>
+					<td align="right">0</td>
+				</tr>
+				</tbody>
+			</table></Col>
+			<Col sm = {4}></Col>
+		</Row>)
 	}
 }
 
