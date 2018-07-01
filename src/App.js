@@ -832,7 +832,7 @@ class EventDBScreen extends Component{
 				</Col>
 			</Row>
 			<EventEditor show = {st.showEventEditor} hide = {this.hideEventEditor} arenaEvent = {pr.arenaEvent}
-			mode = {st.eventEditMode} selectedEvent = {st.arenaEventEditMode === "Edit" && st.selectedEvent}/>
+			mode = {st.eventEditMode} selectedEvent = {st.eventEditMode === "Edit" && st.selectedEvent}/>
 			<EventImporter show = {st.showEventImporter} hide = {this.hideEventImporter} arenaEvent = {pr.arenaEvent}/>
 			<ArenaEventEditor show = {st.showArenaEventEditor} hide = {this.hideArenaEventEditor} specialArenaEvent = {pr.specialArenaEvent}
 			mode = {st.arenaEventEditMode} selectedArenaEvent = {st.arenaEventEditMode === "Edit" && st.selectedArenaEvent}/>
