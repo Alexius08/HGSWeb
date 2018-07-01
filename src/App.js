@@ -618,6 +618,8 @@ class EventDBScreen extends Component{
 		this.deleteArenaEvent = this.deleteArenaEvent.bind(this);
 		this.showEventImporter = this.showEventImporter.bind(this);
 		this.hideEventImporter = this.hideEventImporter.bind(this)
+		this.showArenaEventImporter = this.showArenaEventImporter.bind(this);
+		this.hideArenaEventImporter = this.hideArenaEventImporter.bind(this);
 	}
 	
 	showEventEditor(){
@@ -699,6 +701,13 @@ class EventDBScreen extends Component{
 	}
 	hideEventImporter(){
 		this.setState({showEventImporter: false});
+	}
+	
+	showArenaEventImporter(){
+		this.setState({showArenaEventImporter: true});
+	}
+	hideArenaEventImporter(){
+		this.setState({showArenaEventImporter: false});
 	}
 	
 	render(){
@@ -827,6 +836,7 @@ class EventDBScreen extends Component{
 						<Button onClick = {this.addArenaEvent}>Add new arena event</Button>
 						<Button disabled = {st.selectedArenaEventIndex === -1} onClick = {this.editArenaEvent}>Edit arena event</Button>
 						<Button disabled = {st.selectedArenaEventIndex === -1} onClick = {this.deleteArenaEvent}>Delete arena event</Button>
+						<Button onClick = {this.showArenaEventImporter}>Import arena events</Button>
 						<Button disabled = {JSON.stringify(DefaultSpecialEvent) === JSON.stringify(pr.specialArenaEvent)} onClick = {pr.resetSpecialEvents}>Restore defaults</Button>
 					</ButtonGroup>
 				</Col>
@@ -836,6 +846,7 @@ class EventDBScreen extends Component{
 			<EventImporter show = {st.showEventImporter} hide = {this.hideEventImporter} arenaEvent = {pr.arenaEvent}/>
 			<ArenaEventEditor show = {st.showArenaEventEditor} hide = {this.hideArenaEventEditor} specialArenaEvent = {pr.specialArenaEvent}
 			mode = {st.arenaEventEditMode} selectedArenaEvent = {st.arenaEventEditMode === "Edit" && st.selectedArenaEvent}/>
+			<ArenaEventImporter show = {st.showArenaEventImporter} hide = {this.hideArenaEventImporter} specialArenaEvent = {pr.specialArenaEvent}/>
 		</div>);
 	}
 }
@@ -1265,13 +1276,14 @@ class ArenaEventEditor extends Component{
 class EventImporter extends Component{
 	constructor(props){
 		super(props);
-		this.state = {rawText: "", eventScope: 0}
+		this.state = {rawText: "", eventScope: 0};
 		this.setRawText = this.setRawText.bind(this);
 		this.appendEvents = this.appendEvents.bind(this);
 		this.parseText = this.parseText.bind(this);
 		this.overwriteEvents = this.overwriteEvents.bind(this);
 		this.toggleScope = this.toggleScope.bind(this);
 		this.initializeValues = this.initializeValues.bind(this);
+		this.pushEvents = this.pushEvents.bind(this);
 	}
 	
 	setRawText(e){
@@ -1279,23 +1291,27 @@ class EventImporter extends Component{
 	}
 	
 	appendEvents(){
-		var eventQueue = this.parseText(), pr = this.props;
+		var eventQueue = this.parseText();
 		if (eventQueue.length > 0){
-			for (var i = 0; i < eventQueue.length; i++){
-				var matchFound = false;
-				for (var j = 0; j < pr.arenaEvent.length; j++){
-					if (pr.arenaEvent[j].eventText === eventQueue[i].eventText){
-						matchFound = true;
-						if (!pr.arenaEvent[j].isBloodbathEvent() && eventQueue[i].isBloodbathEvent()) pr.arenaEvent[j].scope += 1;
-						if (!pr.arenaEvent[j].isDayEvent() && eventQueue[i].isDayEvent()) pr.arenaEvent[j].scope += 2;
-						if (!pr.arenaEvent[j].isNightEvent() && eventQueue[i].isNightEvent()) pr.arenaEvent[j].scope += 4;
-						if (!pr.arenaEvent[j].isFeastEvent() && eventQueue[i].isFeastEvent()) pr.arenaEvent[j].scope += 8;
-						break;
-					}
+			this.pushEvents(eventQueue);
+		}
+	}
+	
+	pushEvents(eventQueue){
+		for (var i = 0; i < eventQueue.length; i++){
+			var matchFound = false, pr = this.props;
+			for (var j = 0; j < pr.arenaEvent.length; j++){
+				if (pr.arenaEvent[j].eventText === eventQueue[i].eventText){
+					matchFound = true;
+					if (!pr.arenaEvent[j].isBloodbathEvent() && eventQueue[i].isBloodbathEvent()) pr.arenaEvent[j].scope += 1;
+					if (!pr.arenaEvent[j].isDayEvent() && eventQueue[i].isDayEvent()) pr.arenaEvent[j].scope += 2;
+					if (!pr.arenaEvent[j].isNightEvent() && eventQueue[i].isNightEvent()) pr.arenaEvent[j].scope += 4;
+					if (!pr.arenaEvent[j].isFeastEvent() && eventQueue[i].isFeastEvent()) pr.arenaEvent[j].scope += 8;
+					break;
 				}
-				if(!matchFound && isValidEvent(eventQueue[i])){
-					pr.arenaEvent.push(eventQueue[i]);
-				}
+			}
+			if(!matchFound && isValidEvent(eventQueue[i])){
+				pr.arenaEvent.push(eventQueue[i]);
 			}
 		}
 	}
@@ -1350,7 +1366,7 @@ class EventImporter extends Component{
 				}
 				eventQueue.push(newEvent);
 			}
-		}
+		}	
 		else console.log("No scope selected");
 		return (eventQueue);
 	}
@@ -1359,22 +1375,7 @@ class EventImporter extends Component{
 		var eventQueue = this.parseText(), pr = this.props;
 		if (eventQueue.length > 0){
 			pr.arenaEvent.splice(0, pr.arenaEvent.length);
-			for (var i = 0; i < eventQueue.length; i++){
-				var matchFound = false;
-				for (var j = 0; j < pr.arenaEvent.length; j++){
-					if (pr.arenaEvent[j].eventText === eventQueue[i].eventText){
-						matchFound = true;
-						if (!pr.arenaEvent[j].isBloodbathEvent() && eventQueue[i].isBloodbathEvent()) pr.arenaEvent[j].scope += 1;
-						if (!pr.arenaEvent[j].isDayEvent() && eventQueue[i].isDayEvent()) pr.arenaEvent[j].scope += 2;
-						if (!pr.arenaEvent[j].isNightEvent() && eventQueue[i].isNightEvent()) pr.arenaEvent[j].scope += 4;
-						if (!pr.arenaEvent[j].isFeastEvent() && eventQueue[i].isFeastEvent()) pr.arenaEvent[j].scope += 8;
-						break;
-					}
-				}
-				if(!matchFound && isValidEvent(eventQueue[i])){
-					pr.arenaEvent.push(eventQueue[i]);
-				}
-			}
+			this.pushEvents(eventQueue);
 		}
 	}
 	
@@ -1406,6 +1407,123 @@ class EventImporter extends Component{
 						<Checkbox inline id = "scope8" checked = {(st.eventScope >> 3) % 2 === 1} onChange = {this.toggleScope}>Feast</Checkbox>
 					</Col>
 				</FormGroup>
+			</Modal.Body>
+			<Modal.Footer>
+				<Button bsStyle = "default" onClick = {this.appendEvents}>Append</Button>
+				<Button bsStyle = "warning" onClick = {this.overwriteEvents}>Overwrite</Button>
+				<Button bsStyle = "danger" onClick = {pr.hide}>Close</Button>
+			</Modal.Footer>
+		</Modal>)
+	}
+}
+
+class ArenaEventImporter extends Component{
+	constructor(props){
+		super(props);
+		this.state = {rawText: ""};
+		this.initializeValues = this.initializeValues.bind(this);
+		this.setRawText = this.setRawText.bind(this);
+		this.parseText = this.parseText.bind(this);
+		this.appendEvents = this.appendEvents.bind(this);
+		this.overwriteEvents = this.overwriteEvents.bind(this);
+		this.pushEvents = this.pushEvents.bind(this);
+	}
+	
+	setRawText(e){
+		this.setState({rawText: e.target.value});
+	}
+	
+	initializeValues(){
+		this.setState({rawText: ""});
+	}
+	
+	appendEvents(){
+		var eventQueue = this.parseText();
+		if (eventQueue.length > 0){
+			this.pushEvents(eventQueue);
+		}
+	}
+	
+	overwriteEvents(){
+		var eventQueue = this.parseText(), pr = this.props;
+		if (eventQueue.length > 0){
+			pr.specialArenaEvent.splice(0, pr.specialArenaEvent.length);
+			this.pushEvents(eventQueue);
+		}
+	}
+	
+	pushEvents(eventQueue){
+		for (var i = 0; i < eventQueue.length; i++){
+			var matchFound = false, pr = this.props;
+			for (var j = 0; j < pr.specialArenaEvent.length; j++){
+				if (pr.specialArenaEvent[j].leadText === eventQueue[i].leadText &&
+					pr.specialArenaEvent[j].nonFatalEvent.eventText === eventQueue[i].nonFatalEvent.eventText &&
+					pr.specialArenaEvent[j].fatalEvent[0].eventText === eventQueue[i].fatalEvent[0].eventText &&
+					pr.specialArenaEvent[j].fatalEvent[1].eventText === eventQueue[i].fatalEvent[1].eventText &&
+					pr.specialArenaEvent[j].fatalEvent[2].eventText === eventQueue[i].fatalEvent[2].eventText &&
+					pr.specialArenaEvent[j].fatalEvent[3].eventText === eventQueue[i].fatalEvent[3].eventText &&
+					pr.specialArenaEvent[j].fatalEvent[4].eventText === eventQueue[i].fatalEvent[4].eventText){
+					matchFound = true;
+					break;
+				}
+			}
+			if(!matchFound && isValidEvent(eventQueue[i].nonFatalEvent) && isValidEvent(eventQueue[i].fatalEvent[0]) &&
+				isValidEvent(eventQueue[i].fatalEvent[1]) && isValidEvent(eventQueue[i].fatalEvent[2]) &&
+				isValidEvent(eventQueue[i].fatalEvent[3]) && isValidEvent(eventQueue[i].fatalEvent[4])){
+				pr.specialArenaEvent.push(eventQueue[i]);
+			}
+		}
+	}
+	
+	parseText(){
+		var eventQueue = [], eventHeader = /#[0-9]+[.].+/, subEvent1Header = /\n\n#[0-9]+-1[.].+/,
+			fatalSubevent1 = /\n\n#[0-9]+-1[.].+\nTributes: 1\nKiller: None\nKilled: Player1/, 
+			otherSubeventHeader = /\n\n#[0-9]+-[2-5][.].+/, oneTrib = /\nTributes: 1/, tribCtr = /\nTributes: [1-6]/,
+			killerDisplay = /\nKiller: (None|(Player[1-6][,] ){1,5}Player[1-6]|Player[1-6])/,
+			killedDisplay = /\nKilled: ((Player[1-6][,] ){1,5}Player[1-6]|Player[1-6])/, killPanel = new RegExp(killerDisplay.source + killedDisplay.source),
+			otherSubevent = new RegExp(otherSubeventHeader.source+tribCtr.source+killPanel.source),
+			result = this.state.rawText.match(new RegExp(eventHeader.source + subEvent1Header.source +
+			oneTrib.source + fatalSubevent1.source + otherSubevent.source + otherSubevent.source + otherSubevent.source + otherSubevent.source, "g"));
+			
+		if (result){
+			for (var i = 0; i < result.length; i++){
+				var newEvent = new SpecialArenaEvent(""), line = result[i].split("\n");
+				console.log(line);
+				newEvent.leadText = line[0].slice(line[0].indexOf(".") + 2);
+				newEvent.nonFatalEvent.eventText = line[2].slice(line[2].indexOf(".") + 2);
+				for (var j = 0; j < 5; j++){
+					newEvent.fatalEvent[j].eventText = line[5 * (1 + j)].slice(line[5 * (1 + j)].indexOf(".") + 2);
+					newEvent.fatalEvent[j].playerCount = parseInt(line[6 + (5 * j)].slice(10), 10);
+					newEvent.fatalEvent[j].p = [];
+					for (var k = 0; k < newEvent.fatalEvent[j].playerCount; k++){
+						newEvent.fatalEvent[j].p.push({isKiller: false, deathType: 0});
+						if (newEvent.fatalEvent[j].p[k].isKiller && line[7 + (5 * j)].search("Player" + (k + 1)) > -1){
+							newEvent.fatalEvent[j].p[k].deathType = 2;
+						}
+					}
+					for (k = 0; k < newEvent.fatalEvent[j].playerCount; k++){
+						if (line[8 + (5 * j)].search("Player" + (k + 1)) > -1){
+							newEvent.fatalEvent[j].p[k].deathType = (newEvent.fatalEvent[j].killers() > 0 ? 1 : 3);
+						}
+					}
+					newEvent.fatalEvent[j].isSharedKill = newEvent.fatalEvent[j].killers() > 1;
+				}
+				eventQueue.push(newEvent);
+				console.log(newEvent);
+			}
+		}
+		return (eventQueue);
+	}
+	
+	render(){
+		var pr = this.props, st = this.state;
+		return (
+		<Modal backdrop = "static" show = {pr.show} onHide = {pr.hide} onEnter = {this.initializeValues}>
+			<Modal.Header closeButton>
+				<Modal.Title>{"Import arena events"}</Modal.Title>
+			</Modal.Header>
+			<Modal.Body>
+				<FormControl componentClass = "textarea" placeholder = "Paste event list here" value = {st.rawText} onChange = {this.setRawText}/>
 			</Modal.Body>
 			<Modal.Footer>
 				<Button bsStyle = "default" onClick = {this.appendEvents}>Append</Button>
