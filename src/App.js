@@ -1265,12 +1265,13 @@ class ArenaEventEditor extends Component{
 class EventImporter extends Component{
 	constructor(props){
 		super(props);
-		this.state = {mode: "Append", rawText: "", eventScope: 0}
+		this.state = {rawText: "", eventScope: 0}
 		this.setRawText = this.setRawText.bind(this);
 		this.appendEvents = this.appendEvents.bind(this);
 		this.parseText = this.parseText.bind(this);
 		this.overwriteEvents = this.overwriteEvents.bind(this);
 		this.toggleScope = this.toggleScope.bind(this);
+		this.initializeValues = this.initializeValues.bind(this);
 	}
 	
 	setRawText(e){
@@ -1297,6 +1298,10 @@ class EventImporter extends Component{
 				}
 			}
 		}
+	}
+	
+	initializeValues(){
+		this.setState({rawText: "", eventScope: 0});
 	}
 	
 	parseText(){
@@ -1380,7 +1385,7 @@ class EventImporter extends Component{
 	
 	render(){
 		var pr = this.props, st = this.state;
-		return (<Modal backdrop = "static" show = {pr.show} onHide = {pr.hide}>
+		return (<Modal backdrop = "static" show = {pr.show} onHide = {pr.hide} onEnter = {this.initializeValues}>
 			<Modal.Header closeButton>
 				<Modal.Title>{"Import events"}</Modal.Title>
 			</Modal.Header>
@@ -1404,8 +1409,8 @@ class EventImporter extends Component{
 			</Modal.Body>
 			<Modal.Footer>
 				<Button bsStyle = "default" onClick = {this.appendEvents}>Append</Button>
-				<Button bsStyle = "default" onClick = {this.overwriteEvents}>Overwrite</Button>
-				<Button bsStyle = "danger" onClick = {pr.hide}>Cancel</Button>
+				<Button bsStyle = "warning" onClick = {this.overwriteEvents}>Overwrite</Button>
+				<Button bsStyle = "danger" onClick = {pr.hide}>Close</Button>
 			</Modal.Footer>
 		</Modal>)
 	}
