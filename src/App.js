@@ -30,7 +30,7 @@ class App extends Component{
 			for (var i = 0; i < trib.length; i++){
 				trib[i] = Object.assign(new Player(), trib[i]);
 			}
-			this.setState({"tribute": [...trib]});
+			this.setState({tribute: [...trib]});
 			console.log("Tribute database loaded");
 		}
 		else{
@@ -46,7 +46,7 @@ class App extends Component{
 				var fullname = trib[i].fullname;
 				trib[i].nickname = i > 21 ? fullname.substr(0, fullname.indexOf(" ")) : fullname;
 			}
-			this.setState({"tribute": [...trib]});
+			this.setState({tribute: [...trib]});
 			console.log(trib);
 			console.log("Default tributes loaded");
 		}
@@ -57,11 +57,11 @@ class App extends Component{
 			for (i = 0; i < evt.length; i++){
 				evt[i] = Object.assign(new ArenaEvent(), evt[i])
 			}
-			this.setState({"arenaEvent": [...evt]});
+			this.setState({arenaEvent: [...evt]});
 			console.log("Event database loaded");
 		}
 		else{
-			this.setState({"arenaEvent": [...DefaultEvent]});
+			this.setState({arenaEvent: [...DefaultEvent]});
 			console.log("Default events loaded");
 		}
 		
@@ -71,11 +71,11 @@ class App extends Component{
 			for (i = 0; i < specEvt.length; i++){
 				specEvt[i] = Object.assign(new SpecialArenaEvent(), specEvt[i])
 			}
-			this.setState({"specialArenaEvent": [...specEvt]});
+			this.setState({specialArenaEvent: [...specEvt]});
 			console.log("Arena event database loaded");
 		}
 		else{
-			this.setState({"specialArenaEvent": [...DefaultSpecialEvent]});
+			this.setState({specialArenaEvent: [...DefaultSpecialEvent]});
 			console.log("Default arena events loaded");			
 		}
 	}
@@ -100,12 +100,12 @@ class App extends Component{
 	}
 	
 	resetEvents(){
-		this.setState({"arenaEvent": [...DefaultEvent]});
+		this.setState({arenaEvent: [...DefaultEvent]});
 		console.log("Default events restored");
 	}
 	
 	resetSpecialEvents(){
-		this.setState({"specialArenaEvent": [...DefaultSpecialEvent]});
+		this.setState({specialArenaEvent: [...DefaultSpecialEvent]});
 		console.log("Default arena events restored");		
 	}
 	
@@ -134,7 +134,7 @@ class App extends Component{
 					{st.activePane === "main" && <ReapingScreen availableTribute = {st.tribute}/>}
 					{st.activePane === "eventList" && <EventDBScreen arenaEvent = {st.arenaEvent} specialArenaEvent = {st.specialArenaEvent} resetEvents = {this.resetEvents} resetSpecialEvents = {this.resetSpecialEvents}/>}
 					{st.activePane === "settings" && <SettingsPanel/>}
-					{st.activePane === "tribStats" && <TribStats/>}
+					{st.activePane === "tribStats" && <TribStats tribute = {st.tribute}/>}
 				</Col>
 			</Row>			
 		</Grid>);
@@ -586,51 +586,71 @@ class TributePicker extends Component{
 }
 
 class TribStats extends Component{
+	constructor(props){
+		super(props);
+		this.state = {selectedTributeIndex: -1};
+		this.getSelectedTribute = this.getSelectedTribute.bind(this);
+	}
+	
+	getSelectedTribute(e){
+		this.setState({selectedTributeIndex: parseInt(e.target.id.substr(4), 10)})
+	}
+	
 	render(){
+		var tribList = [], pr = this.props, st = this.state;
+		for (var i = 0; i < pr.tribute.length; i++){
+			tribList.push(<ListGroupItem key = {i} id = {"trib" + pr.tribute[i].id}
+						active = {st.selectedTributeIndex === pr.tribute[i].id}
+						onClick = {this.getSelectedTribute}>{pr.tribute[i].fullname}</ListGroupItem>);
+		}
+		
 		return(<Row>
 			<Col sm = {4}>
-			<FormControl componentClass = "select" size = {6} />
+				<ListGroup id = "arenaEventSearchResult">{tribList}</ListGroup>
 			</Col>
-			<Col sm = {4}><table>
-				<tbody>
-				<tr>
-					<td><b>Name</b></td>
-					<td>.............</td>
-				</tr>
-				<tr>
-				<td><b>Wins</b></td>
-				<td align="right">0</td>
-				</tr>
-				<tr>
-					<td><b>Kills</b></td>
-					<td align="right">0</td>
-				</tr>
-				<tr>
-					<td>Solo Kills</td>
-					<td align="right">0</td>
-				</tr>
-				<tr>
-					<td>Shared Kills</td>
-					<td align="right">0</td>
-				</tr>
-				<tr>
-					<td><b>Deaths</b></td>
-					<td align="right">0</td>
-				</tr>
-				<tr>
-					<td>Combat Deaths</td>
-					<td align="right">0</td>
-				</tr>
-				<tr>
-					<td>Suicides</td>
-					<td align="right">0</td>
-				</tr>
-				<tr>
-					<td>Other Deaths</td>
-					<td align="right">0</td>
-				</tr>
-				</tbody>
-			</table></Col>
+			<Col sm = {4}>
+				<img src = {st.selectedTributeIndex > -1 ? pr.tribute[st.selectedTributeIndex].imageUrl : ""} height = {100} width = {100} alt = {st.selectedTributeIndex > -1 ? pr.tribute[st.selectedTributeIndex].fullname : ""}/>
+				<table>
+					<tbody>
+					<tr>
+						<td><b>Name</b></td>
+						<td>{st.selectedTributeIndex > -1 && pr.tribute[st.selectedTributeIndex].fullname}</td>
+					</tr>
+					<tr>
+						<td><b>Wins</b></td>
+						<td align="right">{st.selectedTributeIndex > -1 && pr.tribute[st.selectedTributeIndex].wins}</td>
+					</tr>
+					<tr>
+						<td><b>Kills</b></td>
+						<td align="right">{st.selectedTributeIndex > -1 && pr.tribute[st.selectedTributeIndex].kills()}</td>
+					</tr>
+					<tr>
+						<td>Solo Kills</td>
+						<td align="right">{st.selectedTributeIndex > -1 && pr.tribute[st.selectedTributeIndex].soloKills}</td>
+					</tr>
+					<tr>
+						<td>Shared Kills</td>
+						<td align="right">{st.selectedTributeIndex > -1 && pr.tribute[st.selectedTributeIndex].sharedKills}</td>
+					</tr>
+					<tr>
+						<td><b>Deaths</b></td>
+						<td align="right">{st.selectedTributeIndex > -1 && pr.tribute[st.selectedTributeIndex].deaths()}</td>
+					</tr>
+					<tr>
+						<td>Combat Deaths</td>
+						<td align="right">{st.selectedTributeIndex > -1 && pr.tribute[st.selectedTributeIndex].combatDeaths}</td>
+					</tr>
+					<tr>
+						<td>Suicides</td>
+						<td align="right">{st.selectedTributeIndex > -1 && pr.tribute[st.selectedTributeIndex].suicides}</td>
+					</tr>
+					<tr>
+						<td>Other Deaths</td>
+						<td align="right">{st.selectedTributeIndex > -1 && pr.tribute[st.selectedTributeIndex].otherDeaths}</td>
+					</tr>
+					</tbody>
+				</table>
+			</Col>
 			<Col sm = {4}></Col>
 		</Row>)
 	}

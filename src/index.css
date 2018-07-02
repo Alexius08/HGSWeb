@@ -157,3 +157,9 @@ body{
 	overflow-y: scroll;
 	background-color: white;
 }
+
+#tribScrollbar{
+	height: 250px;
+	overflow-y: scroll;
+	background-color: white;
+}
