@@ -163,3 +163,8 @@ body{
 	overflow-y: scroll;
 	background-color: white;
 }
+
+.tribPicker{
+	width: 130px;
+}
+}
