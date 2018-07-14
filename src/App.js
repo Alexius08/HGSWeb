@@ -260,10 +260,8 @@ class ReapingScreen extends Component{
 	}
 	
 	loadSelected(x){
-		console.log("Slot "+this.state.recentPick+" filled by "+this.props.tribute[x].fullname)
 		var newSelection = this.state.curTributes.slice();
 		newSelection[this.state.recentPick] = parseInt(x, 10);
-		console.log(newSelection);
 		this.setState({curTributes: [...newSelection]});
 	}
 	
@@ -274,9 +272,13 @@ class ReapingScreen extends Component{
 				options.push({id: pr.tribute[i].id, fullname: pr.tribute[i].fullname});
 			}
 		}
-		console.log(options);
-		newSelection[st.recentPick] = pr.tribute[Math.floor(Math.random() * options.length)].id;
-		this.setState({curTributes: [...newSelection]});
+		if (options.length > 0){
+			newSelection[st.recentPick] = options[Math.floor(Math.random() * options.length)].id;
+			this.setState({curTributes: [...newSelection]});
+		}
+		else{
+			console.log("No more tributes left");
+		}
 	}
 	
 	render(){
@@ -518,9 +520,6 @@ class TributePicker extends Component{
 	
 	componentWillReceiveProps(){
 		var pr = this.props, options = [];
-		console.log("Existing tributes");
-		console.log(pr.excludedTributes);
-		console.log(pr.currentSlot);
 		for (var i = 0; i < pr.tribList.length; i++){
 			if (pr.excludedTributes.indexOf(i) === -1 || pr.excludedTributes.indexOf(i) === pr.currentSlot){
 				options.push({id: pr.tribList[i].id, fullname: pr.tribList[i].fullname});
