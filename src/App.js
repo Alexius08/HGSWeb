@@ -268,10 +268,15 @@ class ReapingScreen extends Component{
 	}
 	
 	pickRandom(){
-		var newSelection = this.state.curTributes.slice();
-		newSelection[this.state.recentPick] = Math.floor(Math.random() * this.state.availableTribute.length);
+		var st = this.state, pr = this.props, newSelection = st.curTributes.slice(), options = [];
+		for (var i = 0; i < pr.tribute.length; i++){
+			if (st.curTributes.indexOf(i) === -1 || st.curTributes.indexOf(i) === st.recentPick){
+				options.push({id: pr.tribute[i].id, fullname: pr.tribute[i].fullname});
+			}
+		}
+		console.log(options);
+		newSelection[st.recentPick] = pr.tribute[Math.floor(Math.random() * options.length)].id;
 		this.setState({curTributes: [...newSelection]});
-		console.log(this.state.availableTribute[newSelection[this.state.recentPick]].fullname);
 	}
 	
 	render(){
@@ -281,7 +286,7 @@ class ReapingScreen extends Component{
 			for (var j = 0; j < st.tribsPerDist; j++){
 				var cellNo = j * st.distCount + i;
 				rowContents.push(<td key = {cellNo}>
-				<DropdownButton bsStyle = "primary" title = {(st.curTributes[cellNo] === -1 ? "Empty slot" : Object.assign({}, pr.tribute[st.curTributes[cellNo]]).fullname)}
+				<DropdownButton className = "tribPicker" bsStyle = "primary" title = {(st.curTributes[cellNo] === -1 ? "Empty slot" : Object.assign({}, pr.tribute[st.curTributes[cellNo]]).fullname)}
 				id = {"selectTrib" + cellNo} onClick = {this.dropdownClick}>
 					<MenuItem eventKey = {0} onSelect = {this.showTributeInput}>Add new tribute</MenuItem>
 					<MenuItem eventKey = {1} onSelect = {this.showTributePicker}>Select existing tribute</MenuItem>
@@ -316,8 +321,9 @@ class ReapingScreen extends Component{
 			<table>
 				<tbody>{tableContents}</tbody>
 			</table>
-			<NewTributeInput show = {st.showTributeInput} hide = {this.hideTributeInput} tribList = {st.availableTribute} currentSlot = {st.recentPick}/>
-			<TributePicker show = {st.showTributePicker} hide = {this.hideTributePicker} tribList = {st.availableTribute}
+			<NewTributeInput show = {st.showTributeInput} hide = {this.hideTributeInput} tribList = {pr.tribute} excludedTributes = {st.curTributes}
+				currentSlot = {st.recentPick} loadSelected = {this.loadSelected}/>
+			<TributePicker show = {st.showTributePicker} hide = {this.hideTributePicker} tribList = {pr.tribute} excludedTributes = {st.curTributes}
 				currentSlot = {st.recentPick} loadSelected = {this.loadSelected}/>
 		</div>);
 	}
@@ -512,8 +518,13 @@ class TributePicker extends Component{
 	
 	componentWillReceiveProps(){
 		var pr = this.props, options = [];
+		console.log("Existing tributes");
+		console.log(pr.excludedTributes);
+		console.log(pr.currentSlot);
 		for (var i = 0; i < pr.tribList.length; i++){
-			options.push({id: pr.tribList[i].id, fullname: pr.tribList[i].fullname});
+			if (pr.excludedTributes.indexOf(i) === -1 || pr.excludedTributes.indexOf(i) === pr.currentSlot){
+				options.push({id: pr.tribList[i].id, fullname: pr.tribList[i].fullname});
+			}
 		}
 		this.setState({currentList: [...options], displayedList: [...options]});
 	}
@@ -569,7 +580,6 @@ class TributePicker extends Component{
 	}
 
 	loadSelected(){
-		console.log(this.state.selectedTrib);
 		this.props.loadSelected(this.state.selectedTrib);
 		this.props.hide();
 	}
