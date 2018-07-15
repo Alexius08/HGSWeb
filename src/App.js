@@ -173,8 +173,7 @@ class ReapingScreen extends Component{
 			recentPick: -1,
 			
 			showTributeInput: false,
-			showTributePicker: false,
-			availableTribute: []
+			showTributePicker: false
 		}
 		this.updateState = this.updateState.bind(this);
 		this.showTributeInput = this.showTributeInput.bind(this);
@@ -186,21 +185,18 @@ class ReapingScreen extends Component{
 		this.pickRandom = this.pickRandom.bind(this);
 	}
 	componentDidMount(){
-		console.log("Initial number of tributes: " + this.state.curTributes.length);
 		this.setState({tribsPerDist: 2, distCount: 12});
 		var newArr = [];
 		for (var i = 0; i < 24; i++){
 			newArr.push(-1);
 		}
-		this.setState({curTributes: newArr});
-	}
-	
-	componentWillReceiveProps(newProps){
-		var newArr = newProps.tribute.slice();
-		for (var i = 0; i < newArr.length; i++){
-			newArr[i] = Object.assign(new Player(), newArr[i]);
+		console.log(sessionStorage.length)
+		if (sessionStorage.HGSRoster){
+			this.setState({curTributes: JSON.parse(sessionStorage.HGSRoster)});
 		}
-		this.setState({availableTribute: [...newArr]});
+		else{
+			this.setState({curTributes: newArr});
+		}
 	}
 	
 	updateState(e){
@@ -237,10 +233,6 @@ class ReapingScreen extends Component{
 			this.setState({"curTributes": [...old]});
 		}
 	}
-	componentDidUpdate(){
-		console.log("Current amount of tributes: " + this.state.curTributes.length);
-		console.log("Available tributes: " + this.state.availableTribute.length);
-	}
 	showTributeInput(){
 		this.setState({showTributeInput: true});
 	}
@@ -263,6 +255,7 @@ class ReapingScreen extends Component{
 		var newSelection = this.state.curTributes.slice();
 		newSelection[this.state.recentPick] = parseInt(x, 10);
 		this.setState({curTributes: [...newSelection]});
+		sessionStorage.setItem("HGSRoster", JSON.stringify(newSelection));
 	}
 	
 	pickRandom(){
@@ -274,7 +267,9 @@ class ReapingScreen extends Component{
 		}
 		if (options.length > 0){
 			newSelection[st.recentPick] = options[Math.floor(Math.random() * options.length)].id;
+			if (isNaN(newSelection[st.recentPick])) console.log("Error detected");
 			this.setState({curTributes: [...newSelection]});
+			sessionStorage.setItem("HGSRoster", JSON.stringify(newSelection));
 		}
 		else{
 			console.log("No more tributes left");
@@ -335,7 +330,7 @@ class NewTributeInput extends Component{
 	constructor(props){
 		super(props);
 		this.checkInput = this.checkInput.bind(this);
-		this.state={
+		this.state = {
 			tribName: "",
 			tribNick: "",
 			tribGender: "",
