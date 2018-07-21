@@ -384,7 +384,7 @@ class NewTributeInput extends Component{
 	}
 	
 	checkInput(e){
-		var st = this.state, pr = this.props, validURL = new RegExp("/^http(s)?:[//].+[.](jpg|jpeg|gif|bmp|png)$/i");
+		var st = this.state, pr = this.props, validURL = new RegExp("^http(s)?:[//].+[.](jpg|jpeg|gif|bmp|png)$", "i");
 		if(st.tribName === "" || st.tribNick === "" || st.tribPicUrl === ""){
 			console.log("Cannot leave tribname, tribnick, or tribpic blank");
 		}
@@ -402,12 +402,18 @@ class NewTributeInput extends Component{
 			else if(st.gender === ""){
 				console.log("No gender selected");
 			}
-			else if(!validURL.test(st.tribPicUrl) || (st.tribDeathPicType==="Custom" && !validURL.test(st.tribDeathPicUrl))){
+			else if(!validURL.test(st.tribPicUrl) || (st.tribDeathPicType === "Custom" && !validURL.test(st.tribDeathPicUrl))){
 				console.log("Invalid image url");
 			}
 			else{
 				console.log("Input validated");
-				//Save input
+				var newTribute = new Player();
+				newTribute.fullname = st.tribName;
+				newTribute.nickname = st.tribNick;
+				newTribute.gender = st.gender;
+				newTribute.imageUrl = st.tribPicUrl;
+				newTribute.deathImage = st.tribDeathPicType === "Custom" ? st.tribDeathPicUrl : st.tribDeathPicType;
+				console.log(newTribute);
 				pr.hide();
 			}
 		}
