@@ -167,4 +167,8 @@ body{
 .tribPicker{
 	width: 130px;
 }
+
+.grayScaleDeathPic{
+	-webkit-filter: grayscale(100%);
+    filter: grayscale(100%);
 }
