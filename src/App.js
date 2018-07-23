@@ -282,7 +282,7 @@ class ReapingScreen extends Component{
 		
 		var newSelection = this.state.curTributes.slice();
 		for (var i = 0; i < newTribs.length; i++){
-			newSelection[newTribs[i]] = this.props.tribute.length + i;
+			newSelection[newTribs[i].id] = this.props.tribute.length + i;
 		}
 		this.setState({curTributes: [...newSelection]});
 		sessionStorage.setItem("HGSRoster", JSON.stringify(newSelection));
@@ -350,9 +350,9 @@ class ReapingScreen extends Component{
 				<tbody>{tableContents}</tbody>
 			</table>
 			<NewTributeInput show = {st.showTributeInput} hide = {this.hideTributeInput} tribList = {pr.tribute} excludedTributes = {st.curTributes}
-				currentSlot = {st.recentPick} loadSelected = {this.loadSelected}/>
-			<TributePicker show = {st.showTributePicker} hide = {this.hideTributePicker} tribList = {pr.tribute} excludedTributes = {st.curTributes}
 				currentSlot = {st.recentPick} loadSelected = {this.loadSelected} loadNew = {this.loadNew}/>
+			<TributePicker show = {st.showTributePicker} hide = {this.hideTributePicker} tribList = {pr.tribute} excludedTributes = {st.curTributes}
+				currentSlot = {st.recentPick} loadSelected = {this.loadSelected}/>
 		</div>);
 	}
 }
