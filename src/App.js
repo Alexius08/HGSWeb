@@ -169,7 +169,7 @@ class ReapingScreen extends Component{
 			tribsPerDist: 0,
 			distCount: 0,
 			curTributes: [],
-			
+			newTributes: [],
 			recentPick: -1,
 			
 			showTributeInput: false,
@@ -183,6 +183,7 @@ class ReapingScreen extends Component{
 		this.dropdownClick = this.dropdownClick.bind(this);
 		this.loadSelected = this.loadSelected.bind(this);
 		this.pickRandom = this.pickRandom.bind(this);
+		this.loadNew = this.loadNew.bind(this);
 	}
 	componentDidMount(){
 		this.setState({tribsPerDist: 2, distCount: 12});
@@ -190,12 +191,16 @@ class ReapingScreen extends Component{
 		for (var i = 0; i < 24; i++){
 			newArr.push(-1);
 		}
-		console.log(sessionStorage.length)
+
 		if (sessionStorage.HGSRoster){
 			this.setState({curTributes: JSON.parse(sessionStorage.HGSRoster)});
 		}
 		else{
 			this.setState({curTributes: newArr});
+		}
+		
+		if (sessionStorage.HGSNewTributes){
+			this.setState({newTributes: JSON.parse(sessionStorage.HGSNewTributes)})
 		}
 	}
 	
@@ -252,8 +257,33 @@ class ReapingScreen extends Component{
 	}
 	
 	loadSelected(x){
+		var st = this.state, pr = this.props, newSelection = st.curTributes.slice(), newTribs = st.newTributes.slice();
+		if(newSelection[st.recentPick] >= pr.tribute.length){
+			newTribs.splice(newSelection[st.recentPick] - pr.tribute.length, 1);
+		}
+		newSelection[st.recentPick] = parseInt(x, 10);
+		for (var i = st.recentPick + 1; i < st.curTributes.length; i++){
+			if(newSelection[i] >= pr.tribute.length){
+				newSelection[i]--;
+			}
+		}
+		
+		this.setState({curTributes: [...newSelection]});
+		sessionStorage.setItem("HGSRoster", JSON.stringify(newSelection));
+	}
+	
+	loadNew(x){
+		var newTribs = this.state.newTributes.slice();
+		newTribs.push(x);
+		newTribs[newTribs.length - 1].id = this.state.recentPick;
+		newTribs.sort(function(a, b){return a.id - b.id});
+		this.setState({newTributes: [...newTribs]});
+		sessionStorage.setItem("HGSNewTributes", JSON.stringify(newTribs));
+		
 		var newSelection = this.state.curTributes.slice();
-		newSelection[this.state.recentPick] = parseInt(x, 10);
+		for (var i = 0; i < newTribs.length; i++){
+			newSelection[newTribs[i]] = this.props.tribute.length + i;
+		}
 		this.setState({curTributes: [...newSelection]});
 		sessionStorage.setItem("HGSRoster", JSON.stringify(newSelection));
 	}
@@ -283,7 +313,8 @@ class ReapingScreen extends Component{
 			for (var j = 0; j < st.tribsPerDist; j++){
 				var cellNo = j * st.distCount + i;
 				rowContents.push(<td key = {cellNo}>
-				<DropdownButton className = "tribPicker" bsStyle = "primary" title = {(st.curTributes[cellNo] === -1 ? "Empty slot" : Object.assign({}, pr.tribute[st.curTributes[cellNo]]).fullname)}
+				<DropdownButton className = "tribPicker" bsStyle = "primary" title = {(st.curTributes[cellNo] === -1 ? "Empty slot" :
+					(st.curTributes[cellNo] < pr.tribute.length ? Object.assign({}, pr.tribute[st.curTributes[cellNo]]).fullname : Object.assign({}, st.newTributes[st.curTributes[cellNo] - pr.tribute.length]).fullname))}
 				id = {"selectTrib" + cellNo} onClick = {this.dropdownClick}>
 					<MenuItem eventKey = {0} onSelect = {this.showTributeInput}>Add new tribute</MenuItem>
 					<MenuItem eventKey = {1} onSelect = {this.showTributePicker}>Select existing tribute</MenuItem>
@@ -321,7 +352,7 @@ class ReapingScreen extends Component{
 			<NewTributeInput show = {st.showTributeInput} hide = {this.hideTributeInput} tribList = {pr.tribute} excludedTributes = {st.curTributes}
 				currentSlot = {st.recentPick} loadSelected = {this.loadSelected}/>
 			<TributePicker show = {st.showTributePicker} hide = {this.hideTributePicker} tribList = {pr.tribute} excludedTributes = {st.curTributes}
-				currentSlot = {st.recentPick} loadSelected = {this.loadSelected}/>
+				currentSlot = {st.recentPick} loadSelected = {this.loadSelected} loadNew = {this.loadNew}/>
 		</div>);
 	}
 }
@@ -410,10 +441,11 @@ class NewTributeInput extends Component{
 				var newTribute = new Player();
 				newTribute.fullname = st.tribName;
 				newTribute.nickname = st.tribNick;
-				newTribute.gender = st.gender;
+				newTribute.gender = st.tribGender;
 				newTribute.imageUrl = st.tribPicUrl;
 				newTribute.deathImage = st.tribDeathPicType === "Custom" ? st.tribDeathPicUrl : st.tribDeathPicType;
 				console.log(newTribute);
+				pr.loadNew(newTribute);
 				pr.hide();
 			}
 		}
