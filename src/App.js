@@ -268,7 +268,8 @@ class ReapingScreen extends Component{
 			}
 		}
 		
-		this.setState({curTributes: [...newSelection]});
+		this.setState({curTributes: [...newSelection], newTributes: [...newTribs]});
+		sessionStorage.setItem("HGSNewTributes", JSON.stringify(newTribs));
 		sessionStorage.setItem("HGSRoster", JSON.stringify(newSelection));
 	}
 	
@@ -289,16 +290,25 @@ class ReapingScreen extends Component{
 	}
 	
 	pickRandom(){
-		var st = this.state, pr = this.props, newSelection = st.curTributes.slice(), options = [];
+		var st = this.state, pr = this.props, newSelection = st.curTributes.slice(), options = [], newTribs = st.newTributes.slice();
 		for (var i = 0; i < pr.tribute.length; i++){
 			if (st.curTributes.indexOf(i) === -1 || st.curTributes.indexOf(i) === st.recentPick){
 				options.push({id: pr.tribute[i].id, fullname: pr.tribute[i].fullname});
 			}
 		}
 		if (options.length > 0){
+			if(newSelection[st.recentPick] >= pr.tribute.length){
+				newTribs.splice(newSelection[st.recentPick] - pr.tribute.length, 1);
+			}
 			newSelection[st.recentPick] = options[Math.floor(Math.random() * options.length)].id;
+			for (i = st.recentPick + 1; i < st.curTributes.length; i++){
+				if(newSelection[i] >= pr.tribute.length){
+					newSelection[i]--;
+				}
+			}
 			if (isNaN(newSelection[st.recentPick])) console.log("Error detected");
-			this.setState({curTributes: [...newSelection]});
+			this.setState({curTributes: [...newSelection], newTributes: [...newTribs]});
+			sessionStorage.setItem("HGSNewTributes", JSON.stringify(newTribs));
 			sessionStorage.setItem("HGSRoster", JSON.stringify(newSelection));
 		}
 		else{
