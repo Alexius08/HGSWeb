@@ -427,7 +427,7 @@ class NewTributeInput extends Component{
 			tribDeathPicUrl: ""});
 	}
 	render(){
-		var st = this.state, pr = this.props;
+		var st = this.state, pr = this.props, validURL = RegExp("^http(s)?:[//].+[.](jpg|jpeg|gif|bmp|png)$", "i");
 		return(
 		<Modal backdrop = "static" show = {pr.show} onHide = {pr.hide} onExited = {this.resetInput}>
 			<Modal.Header closeButton>
@@ -476,7 +476,7 @@ class NewTributeInput extends Component{
 					</Col>
 					<Col sm = {4}>
 						<div className = "imgInputHolder">
-							<img alt = "Tribute pic" src = "default.png" height = {100} width = {100}/>
+							<img alt = "Tribute pic" src = {validURL.test(st.tribPicUrl) ? st.tribPicUrl : "default.png"} height = {100} width = {100}/>
 							<div className = "middle">
 								<FormControl type = "text" id = "newTribPicUrl" bsSize = "sm" placeholder = "Enter image URL here"
 									value = {st.tribPicUrl} onChange = {this.updatePicUrl}/>
@@ -484,10 +484,15 @@ class NewTributeInput extends Component{
 						</div>
 						<br/><br/>
 						<div className = "imgInputHolder">
-							<img alt="Death pic" src = {st.generatedDeathPic} height = {100} width = {100}/>
+							<img alt="Death pic" src = {st.tribDeathPicType === "Custom" ? (validURL.test(st.tribDeathPicUrl) ? st.tribDeathPicUrl : (validURL.test(st.tribPicUrl) ? st.tribPicUrl : "default.png")) :
+							(validURL.test(st.tribPicUrl) ? st.tribPicUrl : "default.png")} className = {st.tribDeathPicType === "BW" ? "grayScaleDeathPic" : undefined}
+							height = {100} width = {100}/>
 							<div className = "middle">
 							{st.tribDeathPicType === "Custom" && <FormControl type = "text" id = "newTribDeathPicUrl" bsSize = "sm"
 							placeholder = "Enter image URL here" value = {st.tribDeathPicUrl} onChange = {this.updateDeathPicUrl}/>}
+							</div>
+							<div className = "overlay">
+								{st.tribDeathPicType === "X" && <img alt = "Cross mark" src = "crossmark.png" height = {100} width = {100}/>}
 							</div>
 						</div>
 					</Col>
