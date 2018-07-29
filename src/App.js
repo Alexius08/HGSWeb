@@ -378,7 +378,11 @@ class NewTributeInput extends Component{
 			tribDeathPicType: "BW",
 			tribPicUrl: "",
 			tribDeathPicUrl: "",
-			generatedDeathPic: ""
+			generatedDeathPic: "",
+			tribPicInputFocus: false,
+			tribPicMouseOver: false,
+			tribDeathPicInputFocus: false,
+			tribDeathPicMouseOver: false
 		}
 		this.updateTribName = this.updateTribName.bind(this);
 		this.setDefaultNick = this.setDefaultNick.bind(this);
@@ -518,20 +522,25 @@ class NewTributeInput extends Component{
 					</Col>
 					<Col sm = {4}>
 						<div className = "imgInputHolder">
-							<img alt = "Tribute pic" src = {validURL.test(st.tribPicUrl) ? st.tribPicUrl : "default.png"} height = {100} width = {100}/>
-							<div className = "middle">
+							<img alt = "Tribute pic" src = {validURL.test(st.tribPicUrl) ? st.tribPicUrl : "default.png"} height = {100} width = {100}
+							onMouseOver = {() => this.setState({tribPicMouseOver: true})} onMouseOut = {() => this.setState({tribPicMouseOver: false})}/>
+							<div className = "middle" style = {{opacity: (st.tribPicInputFocus||st.tribPicMouseOver) ? 1: 0}}>
 								<FormControl type = "text" id = "newTribPicUrl" bsSize = "sm" placeholder = "Enter image URL here"
-									value = {st.tribPicUrl} onChange = {this.updatePicUrl}/>
+									value = {st.tribPicUrl} onMouseOver = {() => this.setState({tribPicMouseOver: true})} onMouseOut = {() => this.setState({tribPicMouseOver: false})}
+									onChange = {this.updatePicUrl} onFocus = {() => this.setState({tribPicInputFocus: true})}
+									onBlur = {() => this.setState({tribPicInputFocus: false})}/>
 							</div>
 						</div>
 						<br/><br/>
 						<div className = "imgInputHolder">
 							<img alt="Death pic" src = {st.tribDeathPicType === "Custom" ? (validURL.test(st.tribDeathPicUrl) ? st.tribDeathPicUrl : (validURL.test(st.tribPicUrl) ? st.tribPicUrl : "default.png")) :
 							(validURL.test(st.tribPicUrl) ? st.tribPicUrl : "default.png")} className = {st.tribDeathPicType === "BW" ? "grayScaleDeathPic" : undefined}
-							height = {100} width = {100}/>
-							<div className = "middle">
+							height = {100} width = {100} onMouseOver = {() => this.setState({tribDeathPicMouseOver: true})} onMouseOut = {() => this.setState({tribDeathPicMouseOver: false})}/>
+							<div className = "middle" style = {{opacity: (st.tribDeathPicInputFocus||st.tribDeathPicMouseOver) ? 1: 0}}>
 							{st.tribDeathPicType === "Custom" && <FormControl type = "text" id = "newTribDeathPicUrl" bsSize = "sm"
-							placeholder = "Enter image URL here" value = {st.tribDeathPicUrl} onChange = {this.updateDeathPicUrl}/>}
+							placeholder = "Enter image URL here" value = {st.tribDeathPicUrl} onChange = {this.updateDeathPicUrl}
+							onMouseOver = {() => this.setState({tribDeathPicMouseOver: true})} onMouseOut = {() => this.setState({tribDeathPicMouseOver: false})}
+							onFocus = {() => this.setState({tribDeathPicInputFocus: true})} onBlur = {() => this.setState({tribDeathPicInputFocus: false})}/>}
 							</div>
 							<div className = "overlay">
 								{st.tribDeathPicType === "X" && <img alt = "Cross mark" src = "crossmark.png" height = {100} width = {100}/>}
