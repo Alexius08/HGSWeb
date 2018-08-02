@@ -260,13 +260,13 @@ class ReapingScreen extends Component{
 		var st = this.state, pr = this.props, newSelection = st.curTributes.slice(), newTribs = st.newTributes.slice();
 		if(newSelection[st.recentPick] >= pr.tribute.length){
 			newTribs.splice(newSelection[st.recentPick] - pr.tribute.length, 1);
-		}
-		newSelection[st.recentPick] = parseInt(x, 10);
-		for (var i = st.recentPick + 1; i < st.curTributes.length; i++){
-			if(newSelection[i] >= pr.tribute.length){
-				newSelection[i]--;
+			for (var i = st.recentPick + 1; i < st.curTributes.length; i++){
+				if(newSelection[i] >= pr.tribute.length){
+					newSelection[i]--;
+				}
 			}
 		}
+		newSelection[st.recentPick] = parseInt(x, 10);
 		
 		this.setState({curTributes: [...newSelection], newTributes: [...newTribs]});
 		sessionStorage.setItem("HGSNewTributes", JSON.stringify(newTribs));
@@ -299,13 +299,13 @@ class ReapingScreen extends Component{
 		if (options.length > 0){
 			if(newSelection[st.recentPick] >= pr.tribute.length){
 				newTribs.splice(newSelection[st.recentPick] - pr.tribute.length, 1);
-			}
-			newSelection[st.recentPick] = options[Math.floor(Math.random() * options.length)].id;
-			for (i = st.recentPick + 1; i < st.curTributes.length; i++){
-				if(newSelection[i] >= pr.tribute.length){
-					newSelection[i]--;
+				for (i = st.recentPick + 1; i < st.curTributes.length; i++){
+					if(newSelection[i] >= pr.tribute.length){
+						newSelection[i]--;
+					}
 				}
 			}
+			newSelection[st.recentPick] = options[Math.floor(Math.random() * options.length)].id;
 			if (isNaN(newSelection[st.recentPick])) console.log("Error detected");
 			this.setState({curTributes: [...newSelection], newTributes: [...newTribs]});
 			sessionStorage.setItem("HGSNewTributes", JSON.stringify(newTribs));
