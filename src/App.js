@@ -173,7 +173,9 @@ class ReapingScreen extends Component{
 			recentPick: -1,
 			
 			showTributeInput: false,
-			showTributePicker: false
+			showTributePicker: false,
+			
+			mode: "selection"
 		}
 		this.updateState = this.updateState.bind(this);
 		this.showTributeInput = this.showTributeInput.bind(this);
@@ -184,6 +186,8 @@ class ReapingScreen extends Component{
 		this.loadSelected = this.loadSelected.bind(this);
 		this.pickRandom = this.pickRandom.bind(this);
 		this.loadNew = this.loadNew.bind(this);
+		this.forward = this.forward.bind(this);
+		this.backward = this.backward.bind(this);
 	}
 	componentDidMount(){
 		this.setState({tribsPerDist: 2, distCount: 12});
@@ -316,6 +320,17 @@ class ReapingScreen extends Component{
 		}
 	}
 	
+	forward(){
+		if(this.state.mode == "selection"){
+			console.log(this.state.curTributes);
+			this.setState({mode: "preview"});
+		}
+	}
+	
+	backward(){
+		this.setState({mode: "selection"});
+	}
+	
 	render(){
 		var tableContents = [], st = this.state, pr = this.props;
 		for (var i = 0; i < st.distCount; i++){
@@ -334,9 +349,32 @@ class ReapingScreen extends Component{
 			}
 			tableContents.push(<tr key = {i}>{rowContents}</tr>);
 		}
+		var curSelection = [];
+		for (var i = 0; i < st.distCount; i++){
+			var rowContents = [];
+			for (var j = 0; j < st.tribsPerDist; j++){
+				var cellNo = j * st.distCount + i;
+				rowContents.push(<td key = {cellNo}>
+					{(st.curTributes[cellNo] === -1 ? (<div><img src = {"default.png"} height = {100} width = {100}/><br/>"Empty slot"</div>) :
+						(st.curTributes[cellNo] < pr.tribute.length ?
+							(<div>
+								<img src = {Object.assign({}, pr.tribute[st.curTributes[cellNo]]).imageUrl} height = {100} width = {100}/>
+								<br/>{Object.assign({}, pr.tribute[st.curTributes[cellNo]]).fullname}
+							</div>) :
+						(<div>
+							<img src = {Object.assign({}, st.newTributes[st.curTributes[cellNo] - pr.tribute.length]).imageUrl} height = {100} width = {100}/>
+							<br/>Object.assign({}, st.newTributes[st.curTributes[cellNo] - pr.tribute.length]).fullname
+						</div>)
+						))
+					}
+				</td>)
+			}
+			curSelection.push(<tr key = {i}>{rowContents}</tr>);
+		}
+		
 		return(
 		<div>
-			<Form horizontal>
+			<Form horizontal style = {{display: st.mode == "selection" ? "block" : "none"}}>
 				<FormGroup controlId = "tributesPerDistrict">
 					<Col componentClass = {ControlLabel} sm = {4} xs = {3}>
 						Number of tributes per district:
@@ -356,9 +394,16 @@ class ReapingScreen extends Component{
 					</Col>
 				</FormGroup>
 			</Form>
-			<table>
+			<table style = {{display: st.mode == "selection" ? "block" : "none"}}>
 				<tbody>{tableContents}</tbody>
 			</table>
+			<table style = {{display: st.mode == "preview" ? "block" : "none"}}>
+				<tbody>{curSelection}</tbody>
+			</table>
+			<div id = "buttonHolder">
+				<Button id = "btnPreview" onClick = {this.forward}>Preview</Button>
+				<Button onClick = {this.backward}>Back</Button>
+			</div>
 			<NewTributeInput show = {st.showTributeInput} hide = {this.hideTributeInput} tribList = {pr.tribute} excludedTributes = {st.curTributes}
 				currentSlot = {st.recentPick} loadSelected = {this.loadSelected} loadNew = {this.loadNew}/>
 			<TributePicker show = {st.showTributePicker} hide = {this.hideTributePicker} tribList = {pr.tribute} excludedTributes = {st.curTributes}
