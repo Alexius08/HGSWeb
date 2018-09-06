@@ -5,6 +5,14 @@ import {Grid, Row, Col, Collapse, Form, FormGroup, ControlLabel, FormControl,
 import ArenaEvent, {DefaultEvent} from './defaultEvent';
 import SpecialArenaEvent, {DefaultSpecialEvent} from './defaultSpecialEvent';
 
+const validURL = RegExp("^http(s)?:[//].+[.](jpg|jpeg|gif|bmp|png)$", "i"), eventHeader = /#[0-9]+[.].+/,
+	subEvent1Header = /\n\n#[0-9]+-1[.].+/, footer = /(?=[\n]+Remove)/,
+	fatalSubevent1 = /\n\n#[0-9]+-1[.].+\nTributes: 1\nKiller: None\nKilled: Player1/, 
+	otherSubeventHeader = /\n\n#[0-9]+-[2-5][.].+/, oneTrib = /\nTributes: 1/, tribCtr = /\nTributes: [1-6]/,
+	killerDisplay = /\nKiller: (None|(Player[1-6][,] ){1,5}Player[1-6]|Player[1-6])/,
+	killedDisplay = /\nKilled: ((Player[1-6][,] ){1,5}Player[1-6]|Player[1-6])/, killPanel = new RegExp(killerDisplay.source + killedDisplay.source),
+	otherSubevent = new RegExp(otherSubeventHeader.source+tribCtr.source+killPanel.source);
+
 class App extends Component{
    constructor(props, context) {
     super(props, context);
@@ -23,27 +31,26 @@ class App extends Component{
 	this.resetSpecialEvents = this.resetSpecialEvents.bind(this);
   }
 	componentDidMount(){
+		let trib = [];
 		if(localStorage.getItem("HGTribute")!=null){
-			var trib = [];
 			console.log("Tribute database detected");
 			trib = JSON.parse(localStorage.HGTribute);
-			for (var i = 0; i < trib.length; i++){
+			for (let i = 0; i < trib.length; i++){
 				trib[i] = Object.assign(new Player(), trib[i]);
 			}
 			this.setState({tribute: [...trib]});
 			console.log("Tribute database loaded");
 		}
 		else{
-			console.log("No tribute database detected");
-			trib = [];			
-			var TributeName = ["Marvel", "Glimmer", "Cato", "Clove", "", "", "", "",
+			console.log("No tribute database detected");		
+			const TributeName = ["Marvel", "Glimmer", "Cato", "Clove", "", "", "", "",
 						"", "Foxface", "Jason", "", "", "", "", "", "", "", "", "",
 						"Thresh", "Rue", "Peeta Mellark", "Katniss Everdeen"];
-			for (i = 0; i < 24; i++){
+			for (let i = 0; i < 24; i++){
 				trib.push(new Player(i, "", "", i % 2 === 0 ? "M" : "F", "T" + i + ".png", "BW"));
 				trib[i].fullname = TributeName[i] === "" ? ("District " + ((i - i % 2) / 2 + 1) +
 									" " + (i % 2 === 0 ? "M" : "Fem") + "ale") : TributeName[i];
-				var fullname = trib[i].fullname;
+				let fullname = trib[i].fullname;
 				trib[i].nickname = i > 21 ? fullname.substr(0, fullname.indexOf(" ")) : fullname;
 			}
 			this.setState({tribute: [...trib]});
@@ -53,8 +60,8 @@ class App extends Component{
 		
 		if(localStorage.getItem("HGEvent") != null){
 			console.log("Event database detected");
-			var evt = JSON.parse(localStorage.HGEvent);
-			for (i = 0; i < evt.length; i++){
+			let evt = JSON.parse(localStorage.HGEvent);
+			for (let i = 0; i < evt.length; i++){
 				evt[i] = Object.assign(new ArenaEvent(), evt[i])
 			}
 			this.setState({arenaEvent: [...evt]});
@@ -67,8 +74,8 @@ class App extends Component{
 		
 		if(localStorage.getItem("HGSpecEvent") != null){
 			console.log("Arena event database detected");
-			var specEvt = JSON.parse(localStorage.HGSpecEvent);
-			for (i = 0; i < specEvt.length; i++){
+			let specEvt = JSON.parse(localStorage.HGSpecEvent);
+			for (let i = 0; i < specEvt.length; i++){
 				specEvt[i] = Object.assign(new SpecialArenaEvent(), specEvt[i])
 			}
 			this.setState({specialArenaEvent: [...specEvt]});
@@ -81,7 +88,7 @@ class App extends Component{
 	}
 	
 	componentDidUpdate(){
-		var st = this.state
+		let st = this.state
 		if(localStorage.getItem("HGTribute") !== JSON.stringify(st.tribute)){
 			localStorage.setItem("HGTribute", JSON.stringify(st.tribute));
 			console.log("Tribute database updated");
@@ -110,10 +117,10 @@ class App extends Component{
 	}
 	
 	render() {
-		var st = this.state, menuItem = ["main", "tribStats", "eventList", "settings"],
+		let st = this.state, menuItem = ["main", "tribStats", "eventList", "settings"],
 			optText = ["Simulate", "Tribute Database", "Event List", "Settings"], options = [];
 		
-		for (var i = 0; i < 4; i++){
+		for (let i = 0; i < 4; i++){
 			options.push(<li key = {i} id = {menuItem[i]} onClick = {this.updateMenu}
 				className = {st.activePane === menuItem[i] ? "active" : null}>{optText[i]}</li>)
 		}
@@ -191,8 +198,8 @@ class ReapingScreen extends Component{
 	}
 	componentDidMount(){
 		this.setState({tribsPerDist: 2, distCount: 12});
-		var newArr = [];
-		for (var i = 0; i < 24; i++){
+		let newArr = [];
+		for (let i = 0; i < 24; i++){
 			newArr.push(-1);
 		}
 
@@ -210,31 +217,28 @@ class ReapingScreen extends Component{
 	
 	updateState(e){
 		if (isValidNumInput(e.target)){
-			var newVal = e.target.value, st = this.state;
-			var old = st.curTributes.slice(), newCount = 0;
+			let newVal = e.target.value, st = this.state, old = st.curTributes.slice(), newCount = 0;
 			if (e.target.id === "tributesPerDistrict"){
 				if(newVal > 1 && newVal < 9){
 					this.setState({tribsPerDist: newVal});
 					newCount = newVal * st.distCount;
 				}
 			}
-			else{
-				if(newVal > 10 && newVal < 15){
-					this.setState({distCount: newVal});
-					newCount = newVal * st.tribsPerDist;
-				}
+			else if(newVal > 10 && newVal < 15){
+				this.setState({distCount: newVal});
+				newCount = newVal * st.tribsPerDist;
 			}
 			
 			if (st.curTributes.length > newCount){
-				var extras = st.curTributes.length - newCount;
-				for (var i = 0; i < extras; i++){
+				let extras = st.curTributes.length - newCount;
+				for (let i = 0; i < extras; i++){
 					old.pop();
 				}
 				console.log(extras + " elements to be removed");
 			}
 			if (st.curTributes.length < newCount){
-				var missing = newCount - st.curTributes.length;
-				for (i = 0; i < missing; i++){
+				let missing = newCount - st.curTributes.length;
+				for (let i = 0; i < missing; i++){
 					old.push(-1);
 				}
 				console.log(missing + " elements to be added");
@@ -261,13 +265,11 @@ class ReapingScreen extends Component{
 	}
 	
 	loadSelected(x){
-		var st = this.state, pr = this.props, newSelection = st.curTributes.slice(), newTribs = st.newTributes.slice();
+		let st = this.state, pr = this.props, newSelection = st.curTributes.slice(), newTribs = st.newTributes.slice();
 		if(newSelection[st.recentPick] >= pr.tribute.length){
 			newTribs.splice(newSelection[st.recentPick] - pr.tribute.length, 1);
-			for (var i = st.recentPick + 1; i < st.curTributes.length; i++){
-				if(newSelection[i] >= pr.tribute.length){
-					newSelection[i]--;
-				}
+			for (let i = st.recentPick + 1; i < st.curTributes.length; i++){
+				if(newSelection[i] >= pr.tribute.length) newSelection[i]--;
 			}
 		}
 		newSelection[st.recentPick] = parseInt(x, 10);
@@ -278,15 +280,14 @@ class ReapingScreen extends Component{
 	}
 	
 	loadNew(x){
-		var newTribs = this.state.newTributes.slice();
+		let newTribs = this.state.newTributes.slice(), newSelection = this.state.curTributes.slice();;
 		newTribs.push(x);
 		newTribs[newTribs.length - 1].id = this.state.recentPick;
 		newTribs.sort(function(a, b){return a.id - b.id});
 		this.setState({newTributes: [...newTribs]});
 		sessionStorage.setItem("HGSNewTributes", JSON.stringify(newTribs));
 		
-		var newSelection = this.state.curTributes.slice();
-		for (var i = 0; i < newTribs.length; i++){
+		for (let i = 0; i < newTribs.length; i++){
 			newSelection[newTribs[i].id] = this.props.tribute.length + i;
 		}
 		this.setState({curTributes: [...newSelection]});
@@ -294,8 +295,8 @@ class ReapingScreen extends Component{
 	}
 	
 	pickRandom(){
-		var st = this.state, pr = this.props, newSelection = st.curTributes.slice(), options = [], newTribs = st.newTributes.slice();
-		for (var i = 0; i < pr.tribute.length; i++){
+		let st = this.state, pr = this.props, newSelection = st.curTributes.slice(), options = [], newTribs = st.newTributes.slice();
+		for (let i = 0; i < pr.tribute.length; i++){
 			if (st.curTributes.indexOf(i) === -1 || st.curTributes.indexOf(i) === st.recentPick){
 				options.push({id: pr.tribute[i].id, fullname: pr.tribute[i].fullname});
 			}
@@ -303,10 +304,8 @@ class ReapingScreen extends Component{
 		if (options.length > 0){
 			if(newSelection[st.recentPick] >= pr.tribute.length){
 				newTribs.splice(newSelection[st.recentPick] - pr.tribute.length, 1);
-				for (i = st.recentPick + 1; i < st.curTributes.length; i++){
-					if(newSelection[i] >= pr.tribute.length){
-						newSelection[i]--;
-					}
+				for (let i = st.recentPick + 1; i < st.curTributes.length; i++){
+					if(newSelection[i] >= pr.tribute.length) newSelection[i]--;
 				}
 			}
 			newSelection[st.recentPick] = options[Math.floor(Math.random() * options.length)].id;
@@ -321,7 +320,7 @@ class ReapingScreen extends Component{
 	}
 	
 	forward(){
-		var st = this.state;
+		let st = this.state;
 		if(st.mode === "selection"){
 			console.log(st.curTributes);
 			if(st.curTributes.includes(-1)){
@@ -378,7 +377,7 @@ class ReapingScreen extends Component{
 		}
 		return(
 		<div>
-			<Form horizontal style = {{display: st.mode == "selection" ? "block" : "none"}}>
+			<Form horizontal style = {{display: st.mode === "selection" ? "block" : "none"}}>
 				<FormGroup controlId = "tributesPerDistrict">
 					<Col componentClass = {ControlLabel} sm = {4} xs = {3}>
 						Number of tributes per district:
@@ -398,10 +397,10 @@ class ReapingScreen extends Component{
 					</Col>
 				</FormGroup>
 			</Form>
-			<table style = {{display: st.mode == "selection" ? "block" : "none"}}>
+			<table style = {{display: st.mode === "selection" ? "block" : "none"}}>
 				<tbody>{tableContents}</tbody>
 			</table>
-			<table style = {{display: st.mode == "preview" ? "block" : "none"}}>
+			<table style = {{display: st.mode === "preview" ? "block" : "none"}}>
 				<tbody>{curSelection}</tbody>
 			</table>
 			<div id = "buttonHolder">
@@ -449,9 +448,7 @@ class NewTributeInput extends Component{
 	}
 	
 	setDefaultNick(e){
-		if(this.state.tribNick === ""){
-			this.setState({tribNick: e.target.value});
-		}
+		if(this.state.tribNick === "") this.setState({tribNick: e.target.value});
 	}
 	
 	updateTribNick(e){
@@ -464,9 +461,7 @@ class NewTributeInput extends Component{
 	
 	updateDeathPicType(e){
 		this.setState({tribDeathPicType: e.target.value});
-		if(e.target.value !== "Custom"){
-			this.setState({generatedDeathPic: this.state.tribPicUrl})
-		}
+		if(e.target.value !== "Custom") this.setState({generatedDeathPic: this.state.tribPicUrl});
 	}
 	
 	updatePicUrl(e){
@@ -478,13 +473,13 @@ class NewTributeInput extends Component{
 	}
 	
 	checkInput(e){
-		var st = this.state, pr = this.props, validURL = new RegExp("^http(s)?:[//].+[.](jpg|jpeg|gif|bmp|png)$", "i");
+		let st = this.state, pr = this.props;
 		if(st.tribName === "" || st.tribNick === "" || st.tribPicUrl === ""){
 			console.log("Cannot leave tribname, tribnick, or tribpic blank");
 		}
 		else{
-			var foundMatch = false;
-			for (var i = 0; i < pr.tribList.length; i++){
+			let foundMatch = false;
+			for (let i = 0; i < pr.tribList.length; i++){
 				if(st.tribName === pr.tribList[i].fullname){
 					foundMatch = true;
 					break;
@@ -501,7 +496,7 @@ class NewTributeInput extends Component{
 			}
 			else{
 				console.log("Input validated");
-				var newTribute = new Player();
+				let newTribute = new Player();
 				newTribute.fullname = st.tribName;
 				newTribute.nickname = st.tribNick;
 				newTribute.gender = st.tribGender;
@@ -522,7 +517,7 @@ class NewTributeInput extends Component{
 			tribDeathPicUrl: ""});
 	}
 	render(){
-		var st = this.state, pr = this.props, validURL = RegExp("^http(s)?:[//].+[.](jpg|jpeg|gif|bmp|png)$", "i");
+		let st = this.state, pr = this.props;
 		return(
 		<Modal backdrop = "static" show = {pr.show} onHide = {pr.hide} onExited = {this.resetInput}>
 			<Modal.Header closeButton>
@@ -625,8 +620,8 @@ class TributePicker extends Component{
 	}
 	
 	componentWillReceiveProps(){
-		var pr = this.props, options = [];
-		for (var i = 0; i < pr.tribList.length; i++){
+		let pr = this.props, options = [];
+		for (let i = 0; i < pr.tribList.length; i++){
 			if (pr.excludedTributes.indexOf(i) === -1 || pr.excludedTributes.indexOf(i) === pr.currentSlot){
 				options.push({id: pr.tribList[i].id, fullname: pr.tribList[i].fullname});
 			}
@@ -635,8 +630,8 @@ class TributePicker extends Component{
 	}
 	
 	updateOptionFilter(e){
-		var newList = [], st = this.state;
-		for (var i = 0; i < st.currentList.length; i++){
+		let newList = [], st = this.state;
+		for (let i = 0; i < st.currentList.length; i++){
 			if(st.currentList[i].fullname.toLowerCase().indexOf(e.target.value.toLowerCase())>-1){
 				newList.push({id: st.currentList[i].id, fullname: st.currentList[i].fullname})
 			};
@@ -645,10 +640,10 @@ class TributePicker extends Component{
 	}
 	
 	sortByName(){
-		var switched = true, b = [...this.state.currentList];
+		let switched = true, b = [...this.state.currentList];
 		while (switched){
 			switched = false;
-			for (var i = 0; i < (b.length - 1); i++){
+			for (let i = 0; i < (b.length - 1); i++){
 				if(b[i].fullname.toLowerCase() > b[i + 1].fullname.toLowerCase()){
 					[b[i], b[i + 1]] = [b[i + 1], b[i]];
 					switched = true;
@@ -660,10 +655,10 @@ class TributePicker extends Component{
 	}
 	
 	sortById(){
-		var switched = true, b = [...this.state.currentList];
+		let switched = true, b = [...this.state.currentList];
 		while (switched){
 			switched = false;
-			for (var i = 0; i < (b.length - 1); i++){
+			for (let i = 0; i < (b.length - 1); i++){
 				if(b[i].id > b[i + 1].id){
 					[b[i], b[i + 1]] = [b[i + 1], b[i]];
 					switched = true;
@@ -675,8 +670,8 @@ class TributePicker extends Component{
 	}
 	
 	showSortedSearch(source){
-		var newList = [];
-		for (var i = 0; i < source.length; i++){
+		let newList = [];
+		for (let i = 0; i < source.length; i++){
 			if(source[i].fullname.toLowerCase().indexOf(this.state.searchTerm.toLowerCase())>-1){
 				newList.push({id: source[i].id, fullname: source[i].fullname})
 			};
@@ -694,9 +689,8 @@ class TributePicker extends Component{
 	}
 	
 	render(){
-		var pr = this.props, st = this.state, options = [];
-		options.push(<option key = {-1} value = {-1} hidden disabled></option>);
-		for (var i = 0; i < st.displayedList.length; i++){
+		let pr = this.props, st = this.state, options = [(<option key = {-1} value = {-1} hidden disabled></option>)];
+		for (let i = 0; i < st.displayedList.length; i++){
 			options.push(<option key = {i} value = {st.displayedList[i].id} > {st.displayedList[i].fullname}</option>)
 		}
 
@@ -737,21 +731,18 @@ class TribStats extends Component{
 	}
 	
 	render(){
-		var tribList = [], pr = this.props, st = this.state;
-		for (var i = 0; i < pr.tribute.length; i++){
+		let tribList = [], pr = this.props, st = this.state;
+		for (let i = 0; i < pr.tribute.length; i++){
 			tribList.push(<ListGroupItem key = {i} id = {"trib" + pr.tribute[i].id}
 						active = {st.selectedTributeIndex === pr.tribute[i].id}
 						onClick = {this.getSelectedTribute}>{pr.tribute[i].fullname}</ListGroupItem>);
 		}
 		
 		return(<Row>
-			<Col sm = {4}>
-				<ListGroup id = "arenaEventSearchResult">{tribList}</ListGroup>
-			</Col>
+			<Col sm = {4}><ListGroup id = "arenaEventSearchResult">{tribList}</ListGroup></Col>
 			<Col sm = {4}>
 				<img src = {st.selectedTributeIndex > -1 ? pr.tribute[st.selectedTributeIndex].imageUrl : ""} height = {100} width = {100} alt = {st.selectedTributeIndex > -1 ? pr.tribute[st.selectedTributeIndex].fullname : ""}/>
-				<table>
-					<tbody>
+				<table><tbody>
 					<tr>
 						<td><b>Name</b></td>
 						<td>{st.selectedTributeIndex > -1 && pr.tribute[st.selectedTributeIndex].fullname}</td>
@@ -788,8 +779,7 @@ class TribStats extends Component{
 						<td>Other Deaths</td>
 						<td align="right">{st.selectedTributeIndex > -1 && pr.tribute[st.selectedTributeIndex].otherDeaths}</td>
 					</tr>
-					</tbody>
-				</table>
+				</tbody></table>
 			</Col>
 			<Col sm = {4}></Col>
 		</Row>)
@@ -862,7 +852,7 @@ class EventDBScreen extends Component{
 	}
 	
 	getArenaEvent(e){
-		var x = parseInt((e.target.tagName === "BUTTON" ? e.target.id : e.target.parentElement.id).substr(10), 10);
+		let x = parseInt((e.target.tagName === "BUTTON" ? e.target.id : e.target.parentElement.id).substr(10), 10);
 		this.setState({selectedArenaEvent: this.props.specialArenaEvent[x],
 						selectedArenaEventIndex: x});
 	}
@@ -881,7 +871,7 @@ class EventDBScreen extends Component{
 	
 	updateArenaEventFilter(e){
 		this.setState({arenaEventSearchTerm: e.target.value});
-		var st = this.state;
+		let st = this.state;
 		if (st.selectedArenaEvent.leadText.toLowerCase().indexOf(st.arenaEventSearchTerm) === -1 &&
 				st.selectedArenaEvent.nonFatalEvent.eventText.toLowerCase().indexOf(st.arenaEventSearchTerm) === -1 &&
 				st.selectedArenaEvent.fatalEvent[0].eventText.toLowerCase().indexOf(st.arenaEventSearchTerm) === -1 &&
@@ -926,7 +916,6 @@ class EventDBScreen extends Component{
 	}
 	
 	resetEvents(){
-		
 		this.props.resetEvents();
 		this.setState({selectedEvent: new ArenaEvent("", 0, 1, [{isKiller: false, deathType: 0}]), selectedEventIndex: -1});
 	}
@@ -937,16 +926,16 @@ class EventDBScreen extends Component{
 	}
 	
 	render(){
-		var eventList = [], arenaEventList = [], pr = this.props, st = this.state;
+		let eventList = [], arenaEventList = [], pr = this.props, st = this.state, eventDesc = (<div/>), arenaEventDesc  = (<div/>);
 
-		for (var i = 0; i < pr.arenaEvent.length; i++){
+		for (let i = 0; i < pr.arenaEvent.length; i++){
 			if(pr.arenaEvent[i].eventText.toLowerCase().indexOf(st.eventSearchTerm) > -1){
 				eventList.push(<option key = {i} value = {i}>{pr.arenaEvent[i].eventText}</option>);
 			}
 		}
 		if (eventList.length > 0) eventList.unshift(<option key = {-1} value = {-1} disabled hidden></option>);
 		
-		for (i = 0; i < pr.specialArenaEvent.length; i++){
+		for (let i = 0; i < pr.specialArenaEvent.length; i++){
 			if(pr.specialArenaEvent[i].leadText.toLowerCase().indexOf(st.arenaEventSearchTerm) > -1||
 				pr.specialArenaEvent[i].nonFatalEvent.eventText.toLowerCase().indexOf(st.arenaEventSearchTerm) > -1||
 				pr.specialArenaEvent[i].fatalEvent[0].eventText.toLowerCase().indexOf(st.arenaEventSearchTerm) > -1||
@@ -967,32 +956,32 @@ class EventDBScreen extends Component{
 		}
 		
 		if (st.selectedEventIndex > -1){
-			var scope = [];
+			let scope = [];
 			if (st.selectedEvent.isBloodbathEvent()) scope.push("Bloodbath");
 			if (st.selectedEvent.isDayEvent()) scope.push("Day");
 			if (st.selectedEvent.isNightEvent()) scope.push("Night");
 			if (st.selectedEvent.isFeastEvent()) scope.push("Feast");
-			var scopeList = scope[0];
+			let scopeList = scope[0];
 			if (scope.length > 1){
-				for (i = 1; i < scope.length; i++){
+				for (let i = 1; i < scope.length; i++){
 					scopeList += ", " + scope[i]
 				}
 			}
-			var killers = [], victims = [], killerList = "", killedList = "";		
+			let killers = [], victims = [], killerList = "", killedList = "";		
 			if (st.selectedEvent.deaths() > 0){
-				for (i = 0; i < st.selectedEvent.playerCount; i++){
+				for (let i = 0; i < st.selectedEvent.playerCount; i++){
 					if (st.selectedEvent.p[i].isKiller) killers.push(i);
 					if (st.selectedEvent.p[i].deathType > 0) victims.push(i);
 				}
-				for (i = 0; i < killers.length; i++){
+				for (let i = 0; i < killers.length; i++){
 					killerList += (i > 0 ? ", " : "") + "Player" + (killers[i] + 1);
 				}
-				for (i = 0; i < victims.length; i++){
+				for (let i = 0; i < victims.length; i++){
 					killedList += (i > 0 ? ", " : "") + "Player" + (victims[i] + 1);
 				}
 			}
 			
-			var eventDesc = (<div>
+			eventDesc = (<div>
 			<h4>{st.selectedEvent.eventText}</h4>
 			Event scope: {scopeList}<br/>
 			Killer: {killers.length > 0 ? killerList : "None"}<br/>
@@ -1001,20 +990,17 @@ class EventDBScreen extends Component{
 		}
 		
 		if (st.selectedArenaEventIndex > -1){
-			var fatalEventList = [];
-			for (i = 0; i < 5; i++){
-				killers = [];
-				victims = [];
-				killerList = "";
-				killedList = "";
-				for (var j = 0; j < st.selectedArenaEvent.fatalEvent[i].playerCount; j++){
+			let fatalEventList = [];
+			for (let i = 0; i < 5; i++){
+				let killers = [], victims = [], killerList = "", killedList = "";
+				for (let j = 0; j < st.selectedArenaEvent.fatalEvent[i].playerCount; j++){
 					if (st.selectedArenaEvent.fatalEvent[i].p[j].isKiller) killers.push(j);
 					if (st.selectedArenaEvent.fatalEvent[i].p[j].deathType > 0) victims.push(j);
 				}
-				for (j = 0; j < killers.length; j++){
+				for (let j = 0; j < killers.length; j++){
 					killerList += (j > 0 ? ", " : "") + "Player" + (killers[j] + 1);
 				}
-				for (j = 0; j < victims.length; j++){
+				for (let j = 0; j < victims.length; j++){
 					killedList += (j > 0 ? ", " : "") + "Player" + (victims[j] + 1);
 				}
 				fatalEventList.push(<div key = {i}>
@@ -1023,7 +1009,7 @@ class EventDBScreen extends Component{
 					Killed: {victims.length > 0 ? killedList : "None"}
 					</div>);
 			}
-			var arenaEventDesc = (<div>
+			arenaEventDesc = (<div>
 			<h5><b>{st.selectedArenaEvent.leadText}</b></h5>
 			<h6><b>Non-fatal event</b></h6>
 			{st.selectedArenaEvent.nonFatalEvent.eventText}
@@ -1086,8 +1072,8 @@ function pl(n){
 }
 
 function isValidEvent(evt){
-	var hasEventTextError = false;
-	for (var i = 0; i < evt.playerCount; i++){
+	let hasEventTextError = false;
+	for (let i = 0; i < evt.playerCount; i++){
 		if (evt.eventText.search(pl(i + 1)) === -1){
 			console.log("Player " + (i + 1) + " not mentioned in event text");
 			hasEventTextError = true;
@@ -1097,15 +1083,15 @@ function isValidEvent(evt){
 			}
 		}
 	}
-	for (i = evt.playerCount; i < 6; i++){
+	for (let i = evt.playerCount; i < 6; i++){
 		if (evt.eventText.search(pl(i + 1)) > 1||evt.eventText.search(pronoun(i + 1)) > -1){
 			console.log("Unnecessary mention of Player " + (i + 1));
 			hasEventTextError = true;
 		}
 	}
-	var hasNoKillers = false;
+	let hasNoKillers = false;
 	if (evt.killers() === 0 && evt.deaths() > 0){
-		for (i = 0; i < evt.p.length; i++){
+		for (let i = 0; i < evt.p.length; i++){
 			if (evt.p[i].deathType === 1){
 				console.log("At least one killer needed");
 				hasNoKillers = true;
@@ -1138,36 +1124,36 @@ class EventEditor extends Component{
 		this.setState({currentEvent: Object.assign(this.state.currentEvent, {eventText: e.target.value})});
 	}
 	toggleScope(e){
-		var val = this.state.currentEvent.scope + (parseInt(e.target.id.substr(5), 10) * (e.target.checked ? 1 : -1));
+		let val = this.state.currentEvent.scope + (parseInt(e.target.id.substr(5), 10) * (e.target.checked ? 1 : -1));
 		this.setState({currentEvent: Object.assign(this.state.currentEvent, {scope: val})});
 	}
 	toggleSharedKill(e){
 		this.setState({currentEvent: Object.assign(this.state.currentEvent, {isSharedKill: e.target.checked})});
 	}
 	toggleKiller(e){
-		var pl = [];
-		for (var i = 0; i < this.state.currentEvent.playerCount; i++){
+		let pl = [];
+		for (let i = 0; i < this.state.currentEvent.playerCount; i++){
 			pl.push(this.state.currentEvent.p[i]);
 		}
 		pl[e.target.id.substr(8)].isKiller = e.target.checked;
 		this.setState({currentEvent: Object.assign(this.state.currentEvent, {p: pl})});
 	}
 	toggleVictim(e){
-		var pl = [];
-		for (var i = 0; i < this.state.currentEvent.playerCount; i++){
+		let pl = [];
+		for (let i = 0; i < this.state.currentEvent.playerCount; i++){
 			pl.push(this.state.currentEvent.p[i]);
 		}
 		pl[e.target.id.substr(8)].deathType = e.target.checked ? 1 : 0;
 		if(pl.filter(function countKilled(p){return p.deathType > 0}).length === 0){
-			for (i = 0; i < this.state.currentEvent.playerCount; i++){
+			for (let i = 0; i < this.state.currentEvent.playerCount; i++){
 				pl[i].isKiller = false;
 			}
 		}
 		this.setState({currentEvent: Object.assign(this.state.currentEvent, {p: pl})});
 	}
 	setDeathType(e){
-		var pl = [];
-		for (var i = 0; i < this.state.currentEvent.playerCount; i++){
+		let pl = [];
+		for (let i = 0; i < this.state.currentEvent.playerCount; i++){
 			pl.push(this.state.currentEvent.p[i]);
 		}
 		pl[e.target.id.substr(9)].deathType = e.target.value;
@@ -1175,21 +1161,21 @@ class EventEditor extends Component{
 	}
 	setTribCount(e){
 		if (isValidNumInput(e.target)){
-			var pl = [];
-			for (var i = 0; i < e.target.value; i++){
+			let pl = [];
+			for (let i = 0; i < e.target.value; i++){
 				pl.push(i < this.state.currentEvent.playerCount ? this.state.currentEvent.p[i] : {isKiller: false, deathType: 0});
 			}
 			this.setState({currentEvent: Object.assign(this.state.currentEvent, {playerCount: e.target.value, p: pl})});
 		}
 	}
 	saveEvent(){
-		var st = this.state, pr = this.props;
+		let st = this.state, pr = this.props;
 		if (st.currentEvent.eventText === ""){
 			console.log("Cannot leave event text empty");
 		}
 		else{
-			var matchFound = false;
-			for (var i = 0; i < pr.arenaEvent.length; i++){
+			let matchFound = false;
+			for (let i = 0; i < pr.arenaEvent.length; i++){
 				if (pr.arenaEvent[i].eventText === st.currentEvent.eventText){
 					matchFound = true;
 					break;
@@ -1210,8 +1196,8 @@ class EventEditor extends Component{
 
 	}
 	render(){
-		var st = this.state, pr = this.props, playerStatus = [];
-		for (var i = 0; i < st.currentEvent.playerCount; i++){
+		let st = this.state, pr = this.props, playerStatus = [];
+		for (let i = 0; i < st.currentEvent.playerCount; i++){
 			playerStatus.push(<Row key = {i}>
 			<Col sm = {3}><ControlLabel>{"Player " + (i + 1)}</ControlLabel></Col>
 			<Col sm = {3}><Checkbox id = {"isKiller" + i} checked = {st.currentEvent.p[i].isKiller} onChange = {this.toggleKiller} disabled = {this.state.currentEvent.deaths() === 0}/></Col>
@@ -1294,10 +1280,10 @@ class ArenaEventEditor extends Component{
 	}
 	
 	initializeValues(){
-		var pr = this.props;
+		let pr = this.props;
 		if (pr.mode === "Edit"){
 			pr.selectedArenaEvent.nonFatalEvent = Object.assign(new ArenaEvent("", 0, 1, [{isKiller: false, deathType: 0}]), pr.selectedArenaEvent.nonFatalEvent);
-			for (var i = 0; i < 5; i++){
+			for (let i = 0; i < 5; i++){
 				pr.selectedArenaEvent.fatalEvent[i] = Object.assign(new ArenaEvent("", 0, 1, [{isKiller: false, deathType: 0}]), pr.selectedArenaEvent.fatalEvent[i]);
 			}
 		}
@@ -1310,14 +1296,14 @@ class ArenaEventEditor extends Component{
 	}
 	
 	setNonFatalEventText(e){
-		var details = Object.assign({}, this.state.currentArenaEvent.nonFatalEvent); //direct assignment will modify original
+		let details = Object.assign({}, this.state.currentArenaEvent.nonFatalEvent); //direct assignment will modify original
 		details.eventText = e.target.value;
 		this.setState({currentArenaEvent: Object.assign(this.state.currentArenaEvent, {nonFatalEvent: details})});
 	}
 	
 	setFatalEventText(e){
-		var fatalEvents = [];
-		for (var i = 0; i < 5; i++){
+		let fatalEvents = [];
+		for (let i = 0; i < 5; i++){
 			fatalEvents.push(this.state.currentArenaEvent.fatalEvent[i]);
 		}
 		fatalEvents[e.target.id.substr(14)].eventText = e.target.value;
@@ -1325,24 +1311,22 @@ class ArenaEventEditor extends Component{
 	}
 
 	toggleKiller(e){
-		var fatalEvents = [];
-		for (var i = 0; i < 5; i++){
+		let fatalEvents = [], rawId = e.target.id.substr(8);
+		for (let i = 0; i < 5; i++){
 			fatalEvents.push(this.state.currentArenaEvent.fatalEvent[i]);
 		}
-		var rawId = e.target.id.substr(8);
 		fatalEvents[(rawId - (rawId % 6)) / 6].p[rawId % 6].isKiller = e.target.checked;
 		this.setState({currentArenaEvent: Object.assign(this.state.currentArenaEvent, {fatalEvent: fatalEvents})});
 	}
 	
 	toggleVictim(e){
-		var fatalEvents = [];
-		for (var i = 0; i < 5; i++){
+		let fatalEvents = [], rawId = e.target.id.substr(8), fatalEvtNo = ((rawId - (rawId % 6)) / 6);
+		for (let i = 0; i < 5; i++){
 			fatalEvents.push(this.state.currentArenaEvent.fatalEvent[i]);
-		}
-		var rawId = e.target.id.substr(8), fatalEvtNo = ((rawId - (rawId % 6)) / 6);
+		} 
 		fatalEvents[fatalEvtNo].p[rawId % 6].deathType = e.target.checked ? 1 : 0;
 		if(fatalEvents[fatalEvtNo].deaths() === 0){
-			for (i = 0; i < fatalEvents[fatalEvtNo].playerCount; i++){
+			for (let i = 0; i < fatalEvents[fatalEvtNo].playerCount; i++){
 				fatalEvents[fatalEvtNo].p[i].isKiller = false;
 			}
 		}
@@ -1350,23 +1334,21 @@ class ArenaEventEditor extends Component{
 	}
 	
 	setDeathType(e){
-		var fatalEvents = [];
-		for (var i = 0; i < 5; i++){
+		let fatalEvents = [], rawId = e.target.id.substr(9);;
+		for (let i = 0; i < 5; i++){
 			fatalEvents.push(this.state.currentArenaEvent.fatalEvent[i]);
 		}
-		var rawId = e.target.id.substr(9);
 		fatalEvents[(rawId - (rawId % 6)) / 6].p[rawId % 6].deathType = e.target.value;
 		this.setState({currentArenaEvent: Object.assign(this.state.currentArenaEvent, {fatalEvent: fatalEvents})});
 	}
 	
 	setTribCount(e){
 		if (isValidNumInput(e.target)){
-			var fatalEvents = [], pl = [];
-			for (var i = 0; i < 5; i++){
+			let fatalEvents = [], pl = [], num = e.target.id.substr(9);
+			for (let i = 0; i < 5; i++){
 				fatalEvents.push(this.state.currentArenaEvent.fatalEvent[i]);
 			}
-			var num = e.target.id.substr(9);
-			for (i = 0; i < e.target.value; i++){
+			for (let i = 0; i < e.target.value; i++){
 				pl.push(i < fatalEvents[num].playerCount ? fatalEvents[num].p[i] : {isKiller: false, deathType: 0});
 			}
 			fatalEvents[num].playerCount = e.target.value;		
@@ -1380,7 +1362,7 @@ class ArenaEventEditor extends Component{
 	}
 	
 	saveArenaEvent(){
-		var st = this.state, pr = this.props;
+		let st = this.state, pr = this.props;
 		if (st.currentArenaEvent.leadText === "" || st.currentArenaEvent.nonFatalEvent.eventText === "" ||
 			st.currentArenaEvent.fatalEvent[0].eventText === "" || st.currentArenaEvent.fatalEvent[1].eventText === "" ||
 			st.currentArenaEvent.fatalEvent[2].eventText === "" || st.currentArenaEvent.fatalEvent[3].eventText === "" ||
@@ -1388,12 +1370,12 @@ class ArenaEventEditor extends Component{
 				console.log("Event text cannot be empty");
 			}
 		else{
-			var hasClone = false;
-			for (var i = 0; i < pr.specialArenaEvent.length; i++){
+			let hasClone = false;
+			for (let i = 0; i < pr.specialArenaEvent.length; i++){
 				if (st.currentArenaEvent.leadText === pr.specialArenaEvent[i].leadText){
 					if (st.currentArenaEvent.nonFatalEvent.eventText === pr.specialArenaEvent[i].nonFatalEvent.eventText){
-						var fatalEventMatch = true;
-						for (var j = 0; j < 5; j++){
+						let fatalEventMatch = true;
+						for (let j = 0; j < 5; j++){
 							if (st.currentArenaEvent.fatalEvent[i].eventText !== pr.specialArenaEvent.fatalEvent[i].eventText){
 								fatalEventMatch = false;
 								break;
@@ -1410,8 +1392,8 @@ class ArenaEventEditor extends Component{
 				console.log("Event already exists");
 			}
 			else{
-				var hasNoKills = false;
-				for (i = 1; i < 5; i++){
+				let hasNoKills = false;
+				for (let i = 1; i < 5; i++){
 					if (st.currentArenaEvent.fatalEvent[i].deaths === 0){
 						console.log("A fatal subevent has no kills");
 						hasNoKills = true;
@@ -1419,9 +1401,9 @@ class ArenaEventEditor extends Component{
 					}
 				}
 				if (!hasNoKills){
-					var hasBuggedSubevent = false;
+					let hasBuggedSubevent = false;
 					if (isValidEvent(st.currentArenaEvent.nonFatalEvent)) hasBuggedSubevent = true;
-					for (i = 0; i < 5; i++){
+					for (let i = 0; i < 5; i++){
 						if (isValidEvent(st.currentArenaEvent.fatalEvent[i])){
 							hasBuggedSubevent = true;
 							break;
@@ -1442,10 +1424,10 @@ class ArenaEventEditor extends Component{
 	}
 	
 	render(){
-		var pr = this.props, st = this.state, fatalEventTabs = [];
-		for (var i = 0; i < 5; i++){
-			var playerStatus = [];
-			for (var j = 0; j < st.currentArenaEvent.fatalEvent[i].playerCount; j++){
+		let pr = this.props, st = this.state, fatalEventTabs = [];
+		for (let i = 0; i < 5; i++){
+			let playerStatus = [];
+			for (let j = 0; j < st.currentArenaEvent.fatalEvent[i].playerCount; j++){
 				playerStatus.push(<Row key = {j}>
 				<Col sm = {3}><ControlLabel>{"Player " + (j + 1)}</ControlLabel></Col>
 				<Col sm = {3}><Checkbox id = {"isKiller" + (i * 6 + j)} checked = {st.currentArenaEvent.fatalEvent[i].p[j].isKiller} onChange = {this.toggleKiller} disabled = {st.currentArenaEvent.fatalEvent[i].deaths() === 0}/></Col>
@@ -1519,16 +1501,17 @@ class EventImporter extends Component{
 	}
 	
 	appendEvents(){
-		var eventQueue = this.parseText();
+		let eventQueue = this.parseText();
 		if (eventQueue.length > 0){
 			this.pushEvents(eventQueue);
 		}
 	}
 	
 	pushEvents(eventQueue){
-		for (var i = 0; i < eventQueue.length; i++){
-			var matchFound = false, pr = this.props;
-			for (var j = 0; j < pr.arenaEvent.length; j++){
+		let pr = this.props;
+		for (let i = 0; i < eventQueue.length; i++){
+			let matchFound = false;
+			for (let j = 0; j < pr.arenaEvent.length; j++){
 				if (pr.arenaEvent[j].eventText === eventQueue[i].eventText){
 					matchFound = true;
 					if (!pr.arenaEvent[j].isBloodbathEvent() && eventQueue[i].isBloodbathEvent()) pr.arenaEvent[j].scope += 1;
@@ -1550,14 +1533,11 @@ class EventImporter extends Component{
 	}
 	
 	parseText(){
-		var eventQueue = [], eventHeader = /#[0-9]+[.].+/, tribCtr = /\nTributes: [1-6]/,
-		killerDisplay = /\nKiller: (None|(Player[1-6][,] ){1,5}Player[1-6]|Player[1-6])/,
-		killedDisplay = /\nKilled: ((Player[1-6][,] ){1,5}Player[1-6]|Player[1-6])/,
-		killPanel = new RegExp(killerDisplay.source + killedDisplay.source), footer = /(?=[\n]+Remove)/;
+		let eventQueue = [];
+
 		if (this.state.eventScope > 0){
-			var nonFatalEvents = this.state.rawText.match(new RegExp(eventHeader.source + tribCtr.source + footer.source, "g"));
-			var fatalEvents = this.state.rawText.match(new RegExp(eventHeader.source + tribCtr.source + killPanel.source, "g"));
-			var result = [];
+			let nonFatalEvents = this.state.rawText.match(new RegExp(eventHeader.source + tribCtr.source + footer.source, "g")),
+			fatalEvents = this.state.rawText.match(new RegExp(eventHeader.source + tribCtr.source + killPanel.source, "g")), result = [];
 			if (nonFatalEvents){
 				result = fatalEvents ? nonFatalEvents.push(...fatalEvents) : nonFatalEvents;
 			}
@@ -1568,19 +1548,19 @@ class EventImporter extends Component{
 				console.log("No matches found");
 			}
 			
-			for (var i = 0; i < result.length; i++){
-				var newEvent = new ArenaEvent("", 0, 1, []), line = result[i].split("\n");
+			for (let i = 0; i < result.length; i++){
+				let newEvent = new ArenaEvent("", 0, 1, []), line = result[i].split("\n");
 				newEvent.eventText = line[0].slice(line[0].indexOf(".") + 2);
 				newEvent.playerCount = parseInt(line[1].slice(10), 10);
 				newEvent.scope = this.state.eventScope;
 				if (line.length > 2){
-					for (var j = 0; j < newEvent.playerCount; j++){
+					for (let j = 0; j < newEvent.playerCount; j++){
 						newEvent.p.push({isKiller: (line[2].search("Player" + (j + 1)) > -1), deathType: 0});
 						if (newEvent.p[j].isKiller && line[3].search("Player" + (j + 1)) > -1){
 							newEvent.p[j].deathType = 2;
 						}
 					}
-					for (j = 0; j < newEvent.playerCount; j++){
+					for (let j = 0; j < newEvent.playerCount; j++){
 						if (line[3].search("Player" + (j + 1)) > -1){
 							newEvent.p[j].deathType = (newEvent.killers() > 0 ? 1 : 3);
 						}
@@ -1588,7 +1568,7 @@ class EventImporter extends Component{
 					newEvent.isSharedKill = newEvent.killers() > 1;
 				}
 				else{
-					for (j = 0; j < newEvent.playerCount; j++){
+					for (let j = 0; j < newEvent.playerCount; j++){
 						newEvent.p.push({isKiller: false, deathType: 0});
 					}
 				}
@@ -1600,7 +1580,7 @@ class EventImporter extends Component{
 	}
 	
 	overwriteEvents(){
-		var eventQueue = this.parseText(), pr = this.props;
+		let eventQueue = this.parseText(), pr = this.props;
 		if (eventQueue.length > 0){
 			pr.arenaEvent.splice(0, pr.arenaEvent.length);
 			this.pushEvents(eventQueue);
@@ -1608,12 +1588,12 @@ class EventImporter extends Component{
 	}
 	
 	toggleScope(e){
-		var val = this.state.eventScope + (parseInt(e.target.id.substr(5), 10) * (e.target.checked ? 1 : -1));
+		let val = this.state.eventScope + (parseInt(e.target.id.substr(5), 10) * (e.target.checked ? 1 : -1));
 		this.setState({eventScope: val});
 	}
 	
 	render(){
-		var pr = this.props, st = this.state;
+		let pr = this.props, st = this.state;
 		return (<Modal backdrop = "static" show = {pr.show} onHide = {pr.hide} onEnter = {this.initializeValues}>
 			<Modal.Header closeButton>
 				<Modal.Title>{"Import events"}</Modal.Title>
@@ -1666,14 +1646,12 @@ class ArenaEventImporter extends Component{
 	}
 	
 	appendEvents(){
-		var eventQueue = this.parseText();
-		if (eventQueue.length > 0){
-			this.pushEvents(eventQueue);
-		}
+		let eventQueue = this.parseText();
+		if (eventQueue.length > 0) this.pushEvents(eventQueue);
 	}
 	
 	overwriteEvents(){
-		var eventQueue = this.parseText(), pr = this.props;
+		let eventQueue = this.parseText(), pr = this.props;
 		if (eventQueue.length > 0){
 			pr.specialArenaEvent.splice(0, pr.specialArenaEvent.length);
 			this.pushEvents(eventQueue);
@@ -1681,9 +1659,10 @@ class ArenaEventImporter extends Component{
 	}
 	
 	pushEvents(eventQueue){
-		for (var i = 0; i < eventQueue.length; i++){
-			var matchFound = false, pr = this.props;
-			for (var j = 0; j < pr.specialArenaEvent.length; j++){
+		let pr = this.props;
+		for (let i = 0; i < eventQueue.length; i++){
+			let matchFound = false;
+			for (let j = 0; j < pr.specialArenaEvent.length; j++){
 				if (pr.specialArenaEvent[j].leadText === eventQueue[i].leadText &&
 					pr.specialArenaEvent[j].nonFatalEvent.eventText === eventQueue[i].nonFatalEvent.eventText &&
 					pr.specialArenaEvent[j].fatalEvent[0].eventText === eventQueue[i].fatalEvent[0].eventText &&
@@ -1705,31 +1684,25 @@ class ArenaEventImporter extends Component{
 	}
 	
 	parseText(){
-		var eventQueue = [], eventHeader = /#[0-9]+[.].+/, subEvent1Header = /\n\n#[0-9]+-1[.].+/,
-			fatalSubevent1 = /\n\n#[0-9]+-1[.].+\nTributes: 1\nKiller: None\nKilled: Player1/, 
-			otherSubeventHeader = /\n\n#[0-9]+-[2-5][.].+/, oneTrib = /\nTributes: 1/, tribCtr = /\nTributes: [1-6]/,
-			killerDisplay = /\nKiller: (None|(Player[1-6][,] ){1,5}Player[1-6]|Player[1-6])/,
-			killedDisplay = /\nKilled: ((Player[1-6][,] ){1,5}Player[1-6]|Player[1-6])/, killPanel = new RegExp(killerDisplay.source + killedDisplay.source),
-			otherSubevent = new RegExp(otherSubeventHeader.source+tribCtr.source+killPanel.source),
-			result = this.state.rawText.match(new RegExp(eventHeader.source + subEvent1Header.source +
+		let eventQueue = [], result = this.state.rawText.match(new RegExp(eventHeader.source + subEvent1Header.source +
 			oneTrib.source + fatalSubevent1.source + otherSubevent.source + otherSubevent.source + otherSubevent.source + otherSubevent.source, "g"));
 			
 		if (result){
-			for (var i = 0; i < result.length; i++){
-				var newEvent = new SpecialArenaEvent(""), line = result[i].split("\n");
+			for (let i = 0; i < result.length; i++){
+				let newEvent = new SpecialArenaEvent(""), line = result[i].split("\n");
 				newEvent.leadText = line[0].slice(line[0].indexOf(".") + 2);
 				newEvent.nonFatalEvent.eventText = line[2].slice(line[2].indexOf(".") + 2);
-				for (var j = 0; j < 5; j++){
+				for (let j = 0; j < 5; j++){
 					newEvent.fatalEvent[j].eventText = line[5 * (1 + j)].slice(line[5 * (1 + j)].indexOf(".") + 2);
 					newEvent.fatalEvent[j].playerCount = parseInt(line[6 + (5 * j)].slice(10), 10);
 					newEvent.fatalEvent[j].p = [];
-					for (var k = 0; k < newEvent.fatalEvent[j].playerCount; k++){
+					for (let k = 0; k < newEvent.fatalEvent[j].playerCount; k++){
 						newEvent.fatalEvent[j].p.push({isKiller: false, deathType: 0});
 						if (newEvent.fatalEvent[j].p[k].isKiller && line[7 + (5 * j)].search("Player" + (k + 1)) > -1){
 							newEvent.fatalEvent[j].p[k].deathType = 2;
 						}
 					}
-					for (k = 0; k < newEvent.fatalEvent[j].playerCount; k++){
+					for (let k = 0; k < newEvent.fatalEvent[j].playerCount; k++){
 						if (line[8 + (5 * j)].search("Player" + (k + 1)) > -1){
 							newEvent.fatalEvent[j].p[k].deathType = (newEvent.fatalEvent[j].killers() > 0 ? 1 : 3);
 						}
@@ -1743,7 +1716,7 @@ class ArenaEventImporter extends Component{
 	}
 	
 	render(){
-		var pr = this.props, st = this.state;
+		let pr = this.props, st = this.state;
 		return (
 		<Modal backdrop = "static" show = {pr.show} onHide = {pr.hide} onEnter = {this.initializeValues}>
 			<Modal.Header closeButton>
