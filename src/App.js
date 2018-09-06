@@ -332,11 +332,11 @@ class ReapingScreen extends Component{
 	}
 	
 	render(){
-		var tableContents = [], st = this.state, pr = this.props;
-		for (var i = 0; i < st.distCount; i++){
-			var rowContents = [];
-			for (var j = 0; j < st.tribsPerDist; j++){
-				var cellNo = j * st.distCount + i;
+		let tableContents = [], st = this.state, pr = this.props;
+		for (let i = 0; i < st.distCount; i++){
+			let rowContents = [];
+			for (let j = 0; j < st.tribsPerDist; j++){
+				let cellNo = j * st.distCount + i;
 				rowContents.push(<td key = {cellNo}>
 				<DropdownButton className = "tribPicker" bsStyle = "primary" title = {(st.curTributes[cellNo] === -1 ? "Empty slot" :
 					(st.curTributes[cellNo] < pr.tribute.length ? Object.assign({}, pr.tribute[st.curTributes[cellNo]]).fullname : Object.assign({}, st.newTributes[st.curTributes[cellNo] - pr.tribute.length]).fullname))}
@@ -349,29 +349,27 @@ class ReapingScreen extends Component{
 			}
 			tableContents.push(<tr key = {i}>{rowContents}</tr>);
 		}
-		var curSelection = [];
-		for (var i = 0; i < st.distCount; i++){
-			var rowContents = [];
-			for (var j = 0; j < st.tribsPerDist; j++){
-				var cellNo = j * st.distCount + i;
+		let curSelection = [];
+		for (let i = 0; i < st.distCount; i++){
+			let rowContents = [];
+			for (let j = 0; j < st.tribsPerDist; j++){
+				let cellNo = j * st.distCount + i,
+				curTrib = Object.assign({}, st.curTributes[cellNo] < pr.tribute.length ?
+					pr.tribute[st.curTributes[cellNo]] :
+					st.newTributes[st.curTributes[cellNo] - pr.tribute.length]);
+				
 				rowContents.push(<td key = {cellNo}>
-					{(st.curTributes[cellNo] === -1 ? (<div><img src = {"default.png"} height = {100} width = {100}/><br/>"Empty slot"</div>) :
-						(st.curTributes[cellNo] < pr.tribute.length ?
-							(<div>
-								<img src = {Object.assign({}, pr.tribute[st.curTributes[cellNo]]).imageUrl} height = {100} width = {100}/>
-								<br/>{Object.assign({}, pr.tribute[st.curTributes[cellNo]]).fullname}
-							</div>) :
-						(<div>
-							<img src = {Object.assign({}, st.newTributes[st.curTributes[cellNo] - pr.tribute.length]).imageUrl} height = {100} width = {100}/>
-							<br/>Object.assign({}, st.newTributes[st.curTributes[cellNo] - pr.tribute.length]).fullname
+					{(st.curTributes[cellNo] === -1 ? (<div><img src = {"default.png"} height = {100} width = {100} alt = {"No tribute selected"}/><br/>"Empty slot"</div>) :
+						(<div className = {"tribDisplay"}>
+							<img src = {curTrib.imageUrl} height = {100} width = {100} alt = {curTrib.fullname}/>
+							<br/>{curTrib.fullname}
 						</div>)
-						))
+						)
 					}
 				</td>)
 			}
 			curSelection.push(<tr key = {i}>{rowContents}</tr>);
 		}
-		
 		return(
 		<div>
 			<Form horizontal style = {{display: st.mode == "selection" ? "block" : "none"}}>
