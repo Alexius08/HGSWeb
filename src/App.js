@@ -321,9 +321,15 @@ class ReapingScreen extends Component{
 	}
 	
 	forward(){
-		if(this.state.mode == "selection"){
-			console.log(this.state.curTributes);
-			this.setState({mode: "preview"});
+		var st = this.state;
+		if(st.mode === "selection"){
+			console.log(st.curTributes);
+			if(st.curTributes.includes(-1)){
+				console.log("Some spots empty");
+			}
+			else{
+				this.setState({mode: "preview"});
+			}
 		}
 	}
 	
@@ -399,7 +405,7 @@ class ReapingScreen extends Component{
 				<tbody>{curSelection}</tbody>
 			</table>
 			<div id = "buttonHolder">
-				<Button id = "btnPreview" onClick = {this.forward}>Preview</Button>
+				<Button id = "btnPreview" onClick = {this.forward}>{st.mode === "selection" ? "Preview" : "Proceed"}</Button>
 				<Button onClick = {this.backward}>Back</Button>
 			</div>
 			<NewTributeInput show = {st.showTributeInput} hide = {this.hideTributeInput} tribList = {pr.tribute} excludedTributes = {st.curTributes}
