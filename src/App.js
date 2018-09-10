@@ -1402,9 +1402,9 @@ class ArenaEventEditor extends Component{
 				}
 				if (!hasNoKills){
 					let hasBuggedSubevent = false;
-					if (isValidEvent(st.currentArenaEvent.nonFatalEvent)) hasBuggedSubevent = true;
+					if (!isValidEvent(st.currentArenaEvent.nonFatalEvent)) hasBuggedSubevent = true;
 					for (let i = 0; i < 5; i++){
-						if (isValidEvent(st.currentArenaEvent.fatalEvent[i])){
+						if (!isValidEvent(st.currentArenaEvent.fatalEvent[i])){
 							hasBuggedSubevent = true;
 							break;
 						}
