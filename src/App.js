@@ -34,10 +34,7 @@ class App extends Component{
 		let trib = [];
 		if(localStorage.getItem("HGTribute")!=null){
 			console.log("Tribute database detected");
-			trib = JSON.parse(localStorage.HGTribute);
-			for (let i = 0; i < trib.length; i++){
-				trib[i] = Object.assign(new Player(), trib[i]);
-			}
+			trib = JSON.parse(localStorage.HGTribute).map(t => Object.assign(new Player(), t));
 			this.setState({tribute: [...trib]});
 			console.log("Tribute database loaded");
 		}
@@ -60,10 +57,7 @@ class App extends Component{
 		
 		if(localStorage.getItem("HGEvent") != null){
 			console.log("Event database detected");
-			let evt = JSON.parse(localStorage.HGEvent);
-			for (let i = 0; i < evt.length; i++){
-				evt[i] = Object.assign(new ArenaEvent(), evt[i])
-			}
+			let evt = JSON.parse(localStorage.HGEvent).map(e => Object.assign(new ArenaEvent(), e));
 			this.setState({arenaEvent: [...evt]});
 			console.log("Event database loaded");
 		}
@@ -74,10 +68,7 @@ class App extends Component{
 		
 		if(localStorage.getItem("HGSpecEvent") != null){
 			console.log("Arena event database detected");
-			let specEvt = JSON.parse(localStorage.HGSpecEvent);
-			for (let i = 0; i < specEvt.length; i++){
-				specEvt[i] = Object.assign(new SpecialArenaEvent(), specEvt[i])
-			}
+			let specEvt = JSON.parse(localStorage.HGSpecEvent).map(e => Object.assign(new SpecialArenaEvent(), e));
 			this.setState({specialArenaEvent: [...specEvt]});
 			console.log("Arena event database loaded");
 		}
@@ -198,10 +189,7 @@ class ReapingScreen extends Component{
 	}
 	componentDidMount(){
 		this.setState({tribsPerDist: 2, distCount: 12});
-		let newArr = [];
-		for (let i = 0; i < 24; i++){
-			newArr.push(-1);
-		}
+		let newArr = Array(24).fill(-1);
 
 		if (sessionStorage.HGSRoster){
 			this.setState({curTributes: JSON.parse(sessionStorage.HGSRoster)});
@@ -283,7 +271,7 @@ class ReapingScreen extends Component{
 		let newTribs = this.state.newTributes.slice(), newSelection = this.state.curTributes.slice();;
 		newTribs.push(x);
 		newTribs[newTribs.length - 1].id = this.state.recentPick;
-		newTribs.sort(function(a, b){return a.id - b.id});
+		newTribs.sort((a, b) => a.id - b.id);
 		this.setState({newTributes: [...newTribs]});
 		sessionStorage.setItem("HGSNewTributes", JSON.stringify(newTribs));
 		
@@ -947,13 +935,7 @@ class EventDBScreen extends Component{
 			if (st.selectedEvent.isDayEvent()) scope.push("Day");
 			if (st.selectedEvent.isNightEvent()) scope.push("Night");
 			if (st.selectedEvent.isFeastEvent()) scope.push("Feast");
-			let scopeList = scope[0];
-			if (scope.length > 1){
-				for (let i = 1; i < scope.length; i++){
-					scopeList += ", " + scope[i]
-				}
-			}
-			let killers = [], victims = [], killerList = "", killedList = "";		
+			let scopeList = scope.join(", "), killers = [], victims = [], killerList = "", killedList = "";		
 			if (st.selectedEvent.deaths() > 0){
 				for (let i = 0; i < st.selectedEvent.playerCount; i++){
 					if (st.selectedEvent.p[i].isKiller) killers.push(i);
@@ -1130,7 +1112,7 @@ class EventEditor extends Component{
 			pl.push(this.state.currentEvent.p[i]);
 		}
 		pl[e.target.id.substr(8)].deathType = e.target.checked ? 1 : 0;
-		if(pl.filter(function countKilled(p){return p.deathType > 0}).length === 0){
+		if(pl.filter(p => p.deathType > 0).length === 0){
 			for (let i = 0; i < this.state.currentEvent.playerCount; i++){
 				pl[i].isKiller = false;
 			}
@@ -1228,7 +1210,7 @@ class EventEditor extends Component{
 					</Col>
 				</FormGroup>
 
-				<Checkbox inline checked = {st.currentEvent.isSharedKill} onChange = {this.toggleSharedKill} disabled = {st.currentEvent.p.filter(function countKillers(pl){return pl.isKiller === true}).length < 2}>Is kill shared?</Checkbox>
+				<Checkbox inline checked = {st.currentEvent.isSharedKill} onChange = {this.toggleSharedKill} disabled = {st.currentEvent.p.filter(pl => pl.isKiller === true).length < 2}>Is kill shared?</Checkbox>
 					<Row>
 						<Col sm = {3}/>
 						<Col sm = {3}>Is killer?</Col>
