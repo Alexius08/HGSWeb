@@ -612,8 +612,7 @@ class TributePicker extends Component{
 			selectedTrib: -1
 		}
 		this.updateOptionFilter = this.updateOptionFilter.bind(this);
-		this.sortByName = this.sortByName.bind(this);
-		this.sortById = this.sortById.bind(this);
+		this.sortList = this.sortList.bind(this);
 		this.showSortedSearch = this.showSortedSearch.bind(this);
 		this.loadSelected = this.loadSelected.bind(this);
 		this.setSelection = this.setSelection.bind(this);
@@ -638,13 +637,16 @@ class TributePicker extends Component{
 		}
 		this.setState({searchTerm: e.target.value, displayedList: [...newList]});
 	}
-	
-	sortByName(){
+
+	sortList(sortKey){
 		let switched = true, b = [...this.state.currentList];
 		while (switched){
 			switched = false;
 			for (let i = 0; i < (b.length - 1); i++){
-				if(b[i].fullname.toLowerCase() > b[i + 1].fullname.toLowerCase()){
+				let condition = sortKey === "Name" ? 
+					(b[i].fullname.toLowerCase() > b[i + 1].fullname.toLowerCase()) :
+					(b[i].id > b[i + 1].id);
+				if(condition){
 					[b[i], b[i + 1]] = [b[i + 1], b[i]];
 					switched = true;
 					break;
@@ -653,22 +655,6 @@ class TributePicker extends Component{
 		}
 		this.showSortedSearch(b);
 	}
-	
-	sortById(){
-		let switched = true, b = [...this.state.currentList];
-		while (switched){
-			switched = false;
-			for (let i = 0; i < (b.length - 1); i++){
-				if(b[i].id > b[i + 1].id){
-					[b[i], b[i + 1]] = [b[i + 1], b[i]];
-					switched = true;
-					break;
-				}
-			}
-		}
-		this.showSortedSearch(b);
-	}
-	
 	showSortedSearch(source){
 		let newList = [];
 		for (let i = 0; i < source.length; i++){
@@ -706,8 +692,8 @@ class TributePicker extends Component{
 						<FormControl componentClass = "select" size = {8} value = {st.selectedTrib} onChange = {this.setSelection}>
 							{options}
 						</FormControl>
-						<Button onClick = {this.sortByName}>Sort by name</Button>
-						<Button onClick = {this.sortById}>Sort by ID</Button>
+						<Button onClick = {() => this.sortList("Name")}>Sort by name</Button>
+						<Button onClick = {() => this.sortList("ID")}>Sort by ID</Button>
 					</Col>
 				</Row>
 			</Modal.Body>
