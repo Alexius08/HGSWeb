@@ -11,13 +11,13 @@ function SpecialArenaEvent(leadText){
 	]
 }
 
-var DefaultSpecialEvent = [];
-var DefaultText = ["Wolf mutts are let loose in the arena", "Acidic rain pours down on the arena", "A cloud of poisonous smoke starts to fill the arena",
+let DefaultSpecialEvent = [];
+const DefaultText = ["Wolf mutts are let loose in the arena", "Acidic rain pours down on the arena", "A cloud of poisonous smoke starts to fill the arena",
 "A monstrous hurricane wreaks havoc on the arena", "A swarm of tracker jackers invades the arena", "A tsunami rolls into the the arena",
 "A fire spreads throughout the arena", "The arena's border begins to rapidly contract", "Monkey mutts fill the arena", "Carnivorous squirrels start attacking the tributes",
 "A volcano erupts at the center of the arena","The arena turns pitch black and nobody can see a thing", "The remaining tributes begin to hallucinate"]
 
-var DefaultSubText = [
+const DefaultSubText = [
 ["(Player1) is crushed by a pack of wolf mutts","(Player1) is eaten by wolf mutts","(Player1) knocks (Player2) out and leaves (him/her2) for the wolf mutts",
 "(Player1) pushes (Player2) into a pack of wolf mutts", "As (Player1) and (Player2) fight, a pack of wolf mutts show up and kill them both"],
 ["(Player1) is unable to find shelter and dies", "(Player1) trips face first into a puddle of acidic rain", "(Player1) injures (Player2) and leaves (him/her2) in the rain to die", "(Player1) refuses (Player2) shelter, killing (him/her2)",
@@ -45,9 +45,9 @@ var DefaultSubText = [
 ["(Player1) eats a scorpion, thinking it is a delicate dessert", "(Player1) hugs a tracker jacker nest, believing it to be a pillow","(Player1) mistakes (Player2) for a bear and kills (him/her2)",
 "(Player1) drowns (Player2), who (he/she1) thought was a shark trying to eat (him/her1)", "(Player1) and (Player2) decide to jump down the rabbit hole to Wonderland, which turns out to be a pit of rocks"]]
 
-for(var i = 0; i < DefaultText.length; i++){
+for(let i = 0; i < DefaultText.length; i++){
 	DefaultSpecialEvent.push(new SpecialArenaEvent(DefaultText[i] + "."));
-	for (var j = 0; j < 5; j++){
+	for (let j = 0; j < 5; j++){
 		DefaultSpecialEvent[i].fatalEvent[j].eventText = DefaultSubText[i][j] + ".";
 	}
 	if ([2, 7, 12].indexOf(i) > -1){

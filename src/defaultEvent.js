@@ -12,8 +12,8 @@ function ArenaEvent(eventText, scope, playerCount, p){
 	this.isFeastEvent = function(){return (this.scope >> 3)% 2 === 1;};
 }
 
-var DefaultEvent = [];
-var DefaultText = [" grabs a shovel", " grabs a backpack and retreats", " finds a bow, some arrows, and a quiver", " runs into the cornucopia and hides",
+let DefaultEvent = [];
+const DefaultText = [" grabs a shovel", " grabs a backpack and retreats", " finds a bow, some arrows, and a quiver", " runs into the cornucopia and hides",
 " takes a handful of throwing knives", " finds a canteen full of water", " stays at the cornucopia for resources", " gathers as much food as (he/she1) can",
 " grabs a sword", " takes a spear from inside the cornucopia", " finds a bag full of explosives", " clutches a first aid kit and runs away", " takes a sickle from inside the cornucopia",
 " runs away with a lighter and some rope", " snatches a bottle of alcohol and a rag", " finds a backpack full of camping equipment", " grabs a backpack, not realizing it is empty",
@@ -72,9 +72,9 @@ var DefaultText = [" grabs a shovel", " grabs a backpack and retreats", " finds 
 " forces (Player2) to kill (Player3) or (Player4). (He/She2) decides to kill (Player4)", " forces (Player2) to kill (Player3) or (Player4). (He/She2) refuses to kill, so (Player1) kills (him/her2) instead",
 " forces (Player2) to kill (Player3) or (Player4). (He/She2) takes a third option and kills (Player1) instead"];
 
-for (var i = 0; i < DefaultText.length; i++){
+for (let i = 0; i < DefaultText.length; i++){
 	DefaultEvent.push(new ArenaEvent("(Player1)" + DefaultText[i] + ".", 0, 1, [{isKiller: false, deathType: 0}]));
-	
+
 	//set scope
 	if (i < 28 || (i > 132 && i < 187)){
 		DefaultEvent[i].scope += 1;
@@ -91,7 +91,7 @@ for (var i = 0; i < DefaultText.length; i++){
 	if (i > 111 && i < 182){
 		DefaultEvent[i].scope += 8;
 	}
-	
+
 	//set player count
 	if (i < 20||(i > 27 && i < 48)||[60, 123, 124].indexOf(i) > -1||(i > 65 && i < 73)||(i > 75 && i < 96)||(i > 111 && i < 116)||(i > 177 && i < 182)){
 		DefaultEvent[i].playerCount = 1;
@@ -109,14 +109,14 @@ for (var i = 0; i < DefaultText.length; i++){
 		DefaultEvent[i].playerCount = 6;
 	}
 	else DefaultEvent[i].playerCount = 2;
-	
+
 	//set defaults for kill status and death type
 	if(DefaultEvent[i].playerCount > DefaultEvent[i].p.length){
-		for (var j = 1; j < DefaultEvent[i].playerCount; j++){
+		for (let j = 1; j < DefaultEvent[i].playerCount; j++){
 			DefaultEvent[i].p.push({isKiller: false, deathType: 0});
 		}
 	}
-	
+
 	//set death type
 	if (i === 123||i === 124||(i > 192 && i < 199)){
 		DefaultEvent[i].p[0].deathType = 3;
@@ -131,12 +131,12 @@ for (var i = 0; i < DefaultText.length; i++){
 		DefaultEvent[i].p[0].deathType = 1;
 	}
 	else if(i === 125){
-		for (j = 3; j < 6; j++){
+		for (let j = 3; j < 6; j++){
 			DefaultEvent[i].p[j].deathType = 1;
 		}
 	}
 	else if(i === 126){
-		for (j = 0; j < 3; j++){
+		for (let j = 0; j < 3; j++){
 			DefaultEvent[i].p[j].deathType = 1;
 		}
 	}
@@ -153,12 +153,12 @@ for (var i = 0; i < DefaultText.length; i++){
 		DefaultEvent[i].p[1].deathType = 1;
 	}
 	else if (i > 169 && i < 174){
-		for (j = 1; j < DefaultEvent[i].playerCount; j++){
+		for (let j = 1; j < DefaultEvent[i].playerCount; j++){
 			DefaultEvent[i].p[j].deathType = 1;
 		}
 	}
 	else if (i === 174||i === 175){
-		for (j = 0; j < DefaultEvent[i].playerCount; j++){
+		for (let j = 0; j < DefaultEvent[i].playerCount; j++){
 			DefaultEvent[i].p[j].deathType = 2;
 		}
 	}
@@ -176,22 +176,22 @@ for (var i = 0; i < DefaultText.length; i++){
 	else if (i === 204){
 		DefaultEvent[i].p[1].deathType = 1;
 	}
-	
+
 	//set kill attribution
 	if (i === 125){
-		for (j = 0; j < 3; j++){
+		for (let j = 0; j < 3; j++){
 			DefaultEvent[i].p[j].isKiller = true;
-		}	
+		}
 	}
 	else if (i === 126){
-		for (j = 3; j < 6; j++){
+		for (let j = 3; j < 6; j++){
 			DefaultEvent[i].p[j].isKiller = true;
-		}	
+		}
 	}
 	else if (i > 126 && i < 131){
-		for (j = 0; j < DefaultEvent[i].playerCount - 1; j++){
+		for (let j = 0; j < DefaultEvent[i].playerCount - 1; j++){
 			DefaultEvent[i].p[j].isKiller = true;
-		}		
+		}
 	}
 	else if ([165, 176, 202, 203].indexOf(i) > -1){
 		DefaultEvent[i].p[0].isKiller = true;
@@ -211,7 +211,7 @@ for (var i = 0; i < DefaultText.length; i++){
 		DefaultEvent[i].p[0].isKiller = false;
 	}
 	else DefaultEvent[i].p[0].isKiller = true;
-	
+
 	 //set shared kill
 	DefaultEvent[i].isSharedKill = (i > 124 && i < 131)||[165, 176, 177, 202, 203].indexOf(i) > -1;
 }
