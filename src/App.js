@@ -198,7 +198,10 @@ class ReapingScreen extends Component{
 	}
 	componentDidMount(){
 		this.setState({tribsPerDist: 2, distCount: 12});
-		let newArr = Array(24).fill(-1);
+		let newArr = [];
+		for (let i = 0; i < 24; i++){
+			newArr.push(-1);
+		}
 
 		if (sessionStorage.HGSRoster){
 			this.setState({curTributes: JSON.parse(sessionStorage.HGSRoster)});
@@ -641,7 +644,8 @@ class TributePicker extends Component{
 		while (switched){
 			switched = false;
 			for (let i = 0; i < (b.length - 1); i++){
-				if(b[i].fullname.toLowerCase() > b[i + 1].fullname.toLowerCase()){
+					(b[i].id > b[i + 1].id);
+				if(condition){
 					[b[i], b[i + 1]] = [b[i + 1], b[i]];
 					switched = true;
 					break;
