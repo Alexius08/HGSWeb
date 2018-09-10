@@ -269,7 +269,7 @@ class ReapingScreen extends Component{
 		let newTribs = this.state.newTributes.slice(), newSelection = this.state.curTributes.slice();;
 		newTribs.push(x);
 		newTribs[newTribs.length - 1].id = this.state.recentPick;
-		newTribs.sort(function(a, b){return a.id - b.id});
+		newTribs.sort((a, b) => a.id - b.id);
 		this.setState({newTributes: [...newTribs]});
 		sessionStorage.setItem("HGSNewTributes", JSON.stringify(newTribs));
 		
@@ -1111,7 +1111,7 @@ class EventEditor extends Component{
 			pl.push(this.state.currentEvent.p[i]);
 		}
 		pl[e.target.id.substr(8)].deathType = e.target.checked ? 1 : 0;
-		if(pl.filter(function countKilled(p){return p.deathType > 0}).length === 0){
+		if(pl.filter(p => p.deathType > 0).length === 0){
 			for (let i = 0; i < this.state.currentEvent.playerCount; i++){
 				pl[i].isKiller = false;
 			}
@@ -1209,7 +1209,7 @@ class EventEditor extends Component{
 					</Col>
 				</FormGroup>
 
-				<Checkbox inline checked = {st.currentEvent.isSharedKill} onChange = {this.toggleSharedKill} disabled = {st.currentEvent.p.filter(function countKillers(pl){return pl.isKiller === true}).length < 2}>Is kill shared?</Checkbox>
+				<Checkbox inline checked = {st.currentEvent.isSharedKill} onChange = {this.toggleSharedKill} disabled = {st.currentEvent.p.filter(pl => pl.isKiller === true).length < 2}>Is kill shared?</Checkbox>
 					<Row>
 						<Col sm = {3}/>
 						<Col sm = {3}>Is killer?</Col>
