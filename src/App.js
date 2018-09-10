@@ -198,10 +198,7 @@ class ReapingScreen extends Component{
 	}
 	componentDidMount(){
 		this.setState({tribsPerDist: 2, distCount: 12});
-		let newArr = [];
-		for (let i = 0; i < 24; i++){
-			newArr.push(-1);
-		}
+		let newArr = Array(24).fill(-1);
 
 		if (sessionStorage.HGSRoster){
 			this.setState({curTributes: JSON.parse(sessionStorage.HGSRoster)});
