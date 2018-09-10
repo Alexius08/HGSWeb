@@ -34,10 +34,7 @@ class App extends Component{
 		let trib = [];
 		if(localStorage.getItem("HGTribute")!=null){
 			console.log("Tribute database detected");
-			trib = JSON.parse(localStorage.HGTribute);
-			for (let i = 0; i < trib.length; i++){
-				trib[i] = Object.assign(new Player(), trib[i]);
-			}
+			trib = JSON.parse(localStorage.HGTribute).map(t => Object.assign(new Player(), t));
 			this.setState({tribute: [...trib]});
 			console.log("Tribute database loaded");
 		}
@@ -60,10 +57,7 @@ class App extends Component{
 		
 		if(localStorage.getItem("HGEvent") != null){
 			console.log("Event database detected");
-			let evt = JSON.parse(localStorage.HGEvent);
-			for (let i = 0; i < evt.length; i++){
-				evt[i] = Object.assign(new ArenaEvent(), evt[i])
-			}
+			let evt = JSON.parse(localStorage.HGEvent).map(e => Object.assign(new ArenaEvent(), e));
 			this.setState({arenaEvent: [...evt]});
 			console.log("Event database loaded");
 		}
@@ -74,10 +68,7 @@ class App extends Component{
 		
 		if(localStorage.getItem("HGSpecEvent") != null){
 			console.log("Arena event database detected");
-			let specEvt = JSON.parse(localStorage.HGSpecEvent);
-			for (let i = 0; i < specEvt.length; i++){
-				specEvt[i] = Object.assign(new SpecialArenaEvent(), specEvt[i])
-			}
+			let specEvt = JSON.parse(localStorage.HGSpecEvent).map(e => Object.assign(new SpecialArenaEvent(), e));
 			this.setState({specialArenaEvent: [...specEvt]});
 			console.log("Arena event database loaded");
 		}
@@ -339,7 +330,8 @@ class ReapingScreen extends Component{
 				let cellNo = j * st.distCount + i;
 				rowContents.push(<td key = {cellNo}>
 				<DropdownButton className = "tribPicker" bsStyle = "primary" title = {(st.curTributes[cellNo] === -1 ? "Empty slot" :
-					(st.curTributes[cellNo] < pr.tribute.length ? Object.assign({}, pr.tribute[st.curTributes[cellNo]]).fullname : Object.assign({}, st.newTributes[st.curTributes[cellNo] - pr.tribute.length]).fullname))}
+					(st.curTributes[cellNo] < pr.tribute.length ? Object.assign({}, pr.tribute[st.curTributes[cellNo]]).fullname : Object.assign({}, st.newTributes[st.curTributes[cellNo] - pr.tribute.length]).fullname)
+				)}
 				id = {"selectTrib" + cellNo} onClick = {this.dropdownClick}>
 					<MenuItem eventKey = {0} onSelect = {this.showTributeInput}>Add new tribute</MenuItem>
 					<MenuItem eventKey = {1} onSelect = {this.showTributePicker}>Select existing tribute</MenuItem>
@@ -942,13 +934,7 @@ class EventDBScreen extends Component{
 			if (st.selectedEvent.isDayEvent()) scope.push("Day");
 			if (st.selectedEvent.isNightEvent()) scope.push("Night");
 			if (st.selectedEvent.isFeastEvent()) scope.push("Feast");
-			let scopeList = scope[0];
-			if (scope.length > 1){
-				for (let i = 1; i < scope.length; i++){
-					scopeList += ", " + scope[i]
-				}
-			}
-			let killers = [], victims = [], killerList = "", killedList = "";		
+			let scopeList = scope.join(", "), killers = [], victims = [], killerList = "", killedList = "";		
 			if (st.selectedEvent.deaths() > 0){
 				for (let i = 0; i < st.selectedEvent.playerCount; i++){
 					if (st.selectedEvent.p[i].isKiller) killers.push(i);
