@@ -198,10 +198,7 @@ class ReapingScreen extends Component{
 	}
 	componentDidMount(){
 		this.setState({tribsPerDist: 2, distCount: 12});
-		let newArr = [];
-		for (let i = 0; i < 24; i++){
-			newArr.push(-1);
-		}
+		let newArr = Array(24).fill(-1);
 
 		if (sessionStorage.HGSRoster){
 			this.setState({curTributes: JSON.parse(sessionStorage.HGSRoster)});
@@ -228,19 +225,17 @@ class ReapingScreen extends Component{
 				this.setState({distCount: newVal});
 				newCount = newVal * st.tribsPerDist;
 			}
+			console.log(newCount);
+			console.log(st.curTributes.length);
 			
 			if (st.curTributes.length > newCount){
 				let extras = st.curTributes.length - newCount;
-				for (let i = 0; i < extras; i++){
-					old.pop();
-				}
+				old.splice(newCount + 1, extras);
 				console.log(extras + " elements to be removed");
 			}
 			if (st.curTributes.length < newCount){
 				let missing = newCount - st.curTributes.length;
-				for (let i = 0; i < missing; i++){
-					old.push(-1);
-				}
+				old.push(...Array(missing).fill(-1));
 				console.log(missing + " elements to be added");
 			}
 			this.setState({"curTributes": [...old]});
@@ -612,8 +607,7 @@ class TributePicker extends Component{
 			selectedTrib: -1
 		}
 		this.updateOptionFilter = this.updateOptionFilter.bind(this);
-		this.sortByName = this.sortByName.bind(this);
-		this.sortById = this.sortById.bind(this);
+		this.sortList = this.sortList.bind(this);
 		this.showSortedSearch = this.showSortedSearch.bind(this);
 		this.loadSelected = this.loadSelected.bind(this);
 		this.setSelection = this.setSelection.bind(this);
@@ -638,12 +632,14 @@ class TributePicker extends Component{
 		}
 		this.setState({searchTerm: e.target.value, displayedList: [...newList]});
 	}
-	
-	sortByName(){
+
+	sortList(sortKey){
 		let switched = true, b = [...this.state.currentList];
 		while (switched){
 			switched = false;
 			for (let i = 0; i < (b.length - 1); i++){
+				let condition = sortKey === "Name" ? 
+					(b[i].fullname.toLowerCase() > b[i + 1].fullname.toLowerCase()) :
 					(b[i].id > b[i + 1].id);
 				if(condition){
 					[b[i], b[i + 1]] = [b[i + 1], b[i]];
@@ -654,22 +650,6 @@ class TributePicker extends Component{
 		}
 		this.showSortedSearch(b);
 	}
-	
-	sortById(){
-		let switched = true, b = [...this.state.currentList];
-		while (switched){
-			switched = false;
-			for (let i = 0; i < (b.length - 1); i++){
-				if(b[i].id > b[i + 1].id){
-					[b[i], b[i + 1]] = [b[i + 1], b[i]];
-					switched = true;
-					break;
-				}
-			}
-		}
-		this.showSortedSearch(b);
-	}
-	
 	showSortedSearch(source){
 		let newList = [];
 		for (let i = 0; i < source.length; i++){
@@ -707,8 +687,8 @@ class TributePicker extends Component{
 						<FormControl componentClass = "select" size = {8} value = {st.selectedTrib} onChange = {this.setSelection}>
 							{options}
 						</FormControl>
-						<Button onClick = {this.sortByName}>Sort by name</Button>
-						<Button onClick = {this.sortById}>Sort by ID</Button>
+						<Button onClick = {() => this.sortList("Name")}>Sort by name</Button>
+						<Button onClick = {() => this.sortList("ID")}>Sort by ID</Button>
 					</Col>
 				</Row>
 			</Modal.Body>
@@ -1403,9 +1383,9 @@ class ArenaEventEditor extends Component{
 				}
 				if (!hasNoKills){
 					let hasBuggedSubevent = false;
-					if (isValidEvent(st.currentArenaEvent.nonFatalEvent)) hasBuggedSubevent = true;
+					if (!isValidEvent(st.currentArenaEvent.nonFatalEvent)) hasBuggedSubevent = true;
 					for (let i = 0; i < 5; i++){
-						if (isValidEvent(st.currentArenaEvent.fatalEvent[i])){
+						if (!isValidEvent(st.currentArenaEvent.fatalEvent[i])){
 							hasBuggedSubevent = true;
 							break;
 						}
